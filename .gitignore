@@ -1,0 +1,31 @@
+# ── Environment ───────────────────────────────────────────────────
+.env
+*.env.local
+
+# ── Dependencies ──────────────────────────────────────────────────
+/vendor/
+
+# ── CI4 writable (cache, logs, sessions) ─────────────────────────
+/writable/cache/*
+/writable/logs/*
+/writable/session/*
+/writable/debugbar/*
+!/writable/cache/.gitkeep
+!/writable/logs/.gitkeep
+!/writable/session/.gitkeep
+
+# ── Uploaded files ────────────────────────────────────────────────
+/public/uploads/
+!/public/uploads/.gitkeep
+
+# ── OS / editor ───────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── PHPUnit ───────────────────────────────────────────────────────
+.phpunit.result.cache
+/build/
