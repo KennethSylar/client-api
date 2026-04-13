@@ -1,6 +1,9 @@
 # ── Environment ───────────────────────────────────────────────────
 .env
 *.env.local
+*.env.dev
+*.env.prod
+*.env.production
 
 # ── Dependencies ──────────────────────────────────────────────────
 /vendor/
