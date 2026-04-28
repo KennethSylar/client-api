@@ -1,10 +1,8 @@
 # ── Environment ───────────────────────────────────────────────────
 .env
-*.env.local
-*.env.dev
-*.env.prod
-*.env.production
-.user.ini 
+.env.*
+!.env.example
+.user.ini
 
 # ── Dependencies ──────────────────────────────────────────────────
 /vendor/
