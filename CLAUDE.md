@@ -47,4 +47,4 @@ $db->table('pages')->where('id', $id)->delete();
 
 ## Skills
 Use `/backend-architect` for adding controllers, routes, and DB queries.
-Use `/deployment` when deploying to Afrihost cPanel.
+Use `/deployment` when deploying to cPanel shared hosting.
