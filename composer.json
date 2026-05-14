@@ -6,6 +6,7 @@
         "php": "^8.1",
         "cloudinary/cloudinary_php": "*",
         "codeigniter4/framework": "^4.5",
+        "dompdf/dompdf": "^2.0",
         "phpmailer/phpmailer": "*",
         "resend/resend-php": "*"
     },

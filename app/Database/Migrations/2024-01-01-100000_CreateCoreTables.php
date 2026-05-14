@@ -20,7 +20,7 @@ class CreateCoreTables extends Migration
         $this->db->query("
             CREATE TABLE IF NOT EXISTS `settings` (
                 `key`   VARCHAR(100)  NOT NULL,
-                `value` TEXT          NOT NULL DEFAULT '',
+                `value` TEXT          NOT NULL,
                 PRIMARY KEY (`key`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
@@ -39,7 +39,7 @@ class CreateCoreTables extends Migration
         $this->db->query("
             CREATE TABLE IF NOT EXISTS `pages` (
                 `slug`       VARCHAR(120)  NOT NULL,
-                `data`       LONGTEXT      NOT NULL DEFAULT '{}',
+                `data`       LONGTEXT      NOT NULL,
                 `updated_at` DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 PRIMARY KEY (`slug`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
@@ -50,7 +50,7 @@ class CreateCoreTables extends Migration
                 `id`             INT UNSIGNED    NOT NULL AUTO_INCREMENT,
                 `issue`          VARCHAR(100)    NOT NULL,
                 `title`          VARCHAR(255)    NOT NULL,
-                `description`    TEXT            NOT NULL DEFAULT '',
+                `description`    TEXT            NOT NULL,
                 `filename`       VARCHAR(255)    NOT NULL DEFAULT '',
                 `file_url`       VARCHAR(500)    NOT NULL DEFAULT '',
                 `file_size`      VARCHAR(30)     NOT NULL DEFAULT '',
@@ -67,7 +67,7 @@ class CreateCoreTables extends Migration
                 `id`          INT UNSIGNED    NOT NULL AUTO_INCREMENT,
                 `category`    VARCHAR(150)    NOT NULL,
                 `title`       VARCHAR(255)    NOT NULL,
-                `description` TEXT            NOT NULL DEFAULT '',
+                `description` TEXT            NOT NULL,
                 `filename`    VARCHAR(255)    NOT NULL DEFAULT '',
                 `file_url`    VARCHAR(500)    NOT NULL DEFAULT '',
                 `file_size`   VARCHAR(30)     NOT NULL DEFAULT '',

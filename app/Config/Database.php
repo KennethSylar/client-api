@@ -17,7 +17,7 @@ class Database extends Config
     //   database.default.password = ...
     public array $default = [
         'DSN'          => '',
-        'hostname'     => 'localhost',
+        'hostname'     => '127.0.0.1',
         'username'     => 'root',
         'password'     => '',
         'database'     => 'client_db',
@@ -32,7 +32,33 @@ class Database extends Config
         'compress'     => false,
         'strictOn'     => false,
         'failover'     => [],
-        'port'         => 3306,
+        'port'         => 3307,
+        'numberNative' => true,
+    ];
+
+    /**
+     * Test database — used when CI_ENVIRONMENT=testing.
+     * Override via phpunit.xml.dist <env> or .env.testing:
+     *   database.tests.hostname / .username / .password / .database
+     */
+    public array $tests = [
+        'DSN'          => '',
+        'hostname'     => '127.0.0.1',
+        'username'     => 'root',
+        'password'     => '',
+        'database'     => 'client_cms_test',
+        'DBDriver'     => 'MySQLi',
+        'DBPrefix'     => '',
+        'pConnect'     => false,
+        'DBDebug'      => true,
+        'charset'      => 'utf8mb4',
+        'DBCollat'     => 'utf8mb4_unicode_ci',
+        'swapPre'      => '',
+        'encrypt'      => false,
+        'compress'     => false,
+        'strictOn'     => false,
+        'failover'     => [],
+        'port'         => 3307,
         'numberNative' => true,
     ];
 }

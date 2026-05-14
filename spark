@@ -7,6 +7,9 @@
  * @see https://codeigniter.com/user_guide/cli/spark_commands.html
  */
 
+// Required by CI4 4.7+ (Common.php::clean_path uses FCPATH)
+define('FCPATH', __DIR__ . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR);
+
 // Require the Composer autoloader
 require_once __DIR__ . '/vendor/autoload.php';
 

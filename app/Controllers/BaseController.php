@@ -57,6 +57,20 @@ abstract class BaseController extends Controller
     }
 
     /**
+     * Returns a 503 response if the shop is disabled, null otherwise.
+     * Usage: if ($off = $this->shopOffline()) return $off;
+     */
+    protected function shopOffline(): ?\CodeIgniter\HTTP\ResponseInterface
+    {
+        $db      = \Config\Database::connect();
+        $enabled = $db->table('settings')->where('key', 'shop_enabled')->get()->getRowArray();
+        if (($enabled['value'] ?? '0') !== '1') {
+            return $this->error('Shop is currently unavailable.', 503);
+        }
+        return null;
+    }
+
+    /**
      * Parse JSON request body, supporting both raw JSON and form-encoded.
      */
     protected function jsonBody(): array
