@@ -27,49 +27,49 @@ class Services extends BaseService
     public static function settingsRepository(bool $getShared = true): \App\Domain\Core\SettingsRepositoryInterface
     {
         if ($getShared) return static::getSharedInstance('settingsRepository');
-        throw new \RuntimeException('settingsRepository not yet bound — complete M2 Story 2.2 first.');
+        return new \App\Infrastructure\Persistence\MySqlSettingsRepository();
     }
 
     public static function pageRepository(bool $getShared = true): \App\Domain\Core\PageRepositoryInterface
     {
         if ($getShared) return static::getSharedInstance('pageRepository');
-        throw new \RuntimeException('pageRepository not yet bound — complete M2 Story 2.3 first.');
+        return new \App\Infrastructure\Persistence\MySqlPageRepository();
     }
 
     public static function adminSessionRepository(bool $getShared = true): \App\Domain\Core\AdminSessionRepositoryInterface
     {
         if ($getShared) return static::getSharedInstance('adminSessionRepository');
-        throw new \RuntimeException('adminSessionRepository not yet bound — complete M2 Story 2.4 first.');
+        return new \App\Infrastructure\Persistence\MySqlAdminSessionRepository();
     }
 
     public static function categoryRepository(bool $getShared = true): \App\Domain\Shop\CategoryRepositoryInterface
     {
         if ($getShared) return static::getSharedInstance('categoryRepository');
-        throw new \RuntimeException('categoryRepository not yet bound — complete M2 Story 2.5 first.');
+        return new \App\Infrastructure\Persistence\MySqlCategoryRepository();
     }
 
     public static function productRepository(bool $getShared = true): \App\Domain\Shop\ProductRepositoryInterface
     {
         if ($getShared) return static::getSharedInstance('productRepository');
-        throw new \RuntimeException('productRepository not yet bound — complete M2 Story 2.6 first.');
+        return new \App\Infrastructure\Persistence\MySqlProductRepository();
     }
 
     public static function stockRepository(bool $getShared = true): \App\Domain\Shop\StockRepositoryInterface
     {
         if ($getShared) return static::getSharedInstance('stockRepository');
-        throw new \RuntimeException('stockRepository not yet bound — complete M2 Story 2.7 first.');
+        return new \App\Infrastructure\Persistence\MySqlStockRepository();
     }
 
     public static function orderRepository(bool $getShared = true): \App\Domain\Orders\OrderRepositoryInterface
     {
         if ($getShared) return static::getSharedInstance('orderRepository');
-        throw new \RuntimeException('orderRepository not yet bound — complete M2 Story 2.8 first.');
+        return new \App\Infrastructure\Persistence\MySqlOrderRepository();
     }
 
     public static function customerRepository(bool $getShared = true): \App\Domain\Orders\CustomerRepositoryInterface
     {
         if ($getShared) return static::getSharedInstance('customerRepository');
-        throw new \RuntimeException('customerRepository not yet bound — complete M2 Story 2.9 first.');
+        return new \App\Infrastructure\Persistence\MySqlCustomerRepository();
     }
 
     // -------------------------------------------------------------------------

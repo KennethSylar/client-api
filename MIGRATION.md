@@ -41,7 +41,7 @@ app/
 |-----------|---------|------|--------|
 | M0 Foundation | 4 | 4 | ✅ |
 | M1 Domain Layer | 6 | 6 | ✅ |
-| M2 Infrastructure: Persistence | 8 | 0 | 🔲 |
+| M2 Infrastructure: Persistence | 9 | 9 | ✅ |
 | M3 Infrastructure: Services & Gateways | 6 | 0 | 🔲 |
 | M4 Application: Commands | 13 | 0 | 🔲 |
 | M5 Application: Queries | 7 | 0 | 🔲 |
@@ -116,34 +116,34 @@ app/
 > Goal: every repository interface has a concrete MySql implementation, bound in Services.php.  
 > May use CI4 query builder. No HTTP, no mailer, no Cloudinary.
 
-- [ ] **2.1** — `app/Infrastructure/Persistence/AbstractMysqlRepository.php`  
-  _(base class: `db()` helper, `paginate()`, `now()`)_
+- [x] **2.1** — `app/Infrastructure/Persistence/AbstractMysqlRepository.php`  
+  _(base class: `db()` helper, `paginate()`, `now()`, `slugify()`, `uniqueSlug()`)_
 
-- [ ] **2.2** — `app/Infrastructure/Persistence/MySqlSettingsRepository.php`  
+- [x] **2.2** — `app/Infrastructure/Persistence/MySqlSettingsRepository.php`  
   + bind `settingsRepository` in `Services.php`
 
-- [ ] **2.3** — `app/Infrastructure/Persistence/MySqlPageRepository.php`  
+- [x] **2.3** — `app/Infrastructure/Persistence/MySqlPageRepository.php`  
   + bind `pageRepository` in `Services.php`
 
-- [ ] **2.4** — `app/Infrastructure/Persistence/MySqlAdminSessionRepository.php`  
+- [x] **2.4** — `app/Infrastructure/Persistence/MySqlAdminSessionRepository.php`  
   + bind `adminSessionRepository` in `Services.php`
 
-- [ ] **2.5** — `app/Infrastructure/Persistence/MySqlCategoryRepository.php`  
+- [x] **2.5** — `app/Infrastructure/Persistence/MySqlCategoryRepository.php`  
   + bind `categoryRepository` in `Services.php`
 
-- [ ] **2.6** — `app/Infrastructure/Persistence/MySqlProductRepository.php`  
+- [x] **2.6** — `app/Infrastructure/Persistence/MySqlProductRepository.php`  
   _(covers products + images + variants sub-aggregates)_  
   + bind `productRepository` in `Services.php`
 
-- [ ] **2.7** — `app/Infrastructure/Persistence/MySqlStockRepository.php`  
+- [x] **2.7** — `app/Infrastructure/Persistence/MySqlStockRepository.php`  
   _(replaces static `Stock::logAdjustment()`)_  
   + bind `stockRepository` in `Services.php`
 
-- [ ] **2.8** — `app/Infrastructure/Persistence/MySqlOrderRepository.php`  
+- [x] **2.8** — `app/Infrastructure/Persistence/MySqlOrderRepository.php`  
   _(covers orders + items + status log hydration)_  
   + bind `orderRepository` in `Services.php`
 
-- [ ] **2.9** — `app/Infrastructure/Persistence/MySqlCustomerRepository.php`  
+- [x] **2.9** — `app/Infrastructure/Persistence/MySqlCustomerRepository.php`  
   _(covers customers + customer sessions)_  
   + bind `customerRepository` in `Services.php`
 
