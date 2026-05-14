@@ -42,12 +42,12 @@ app/
 | M0 Foundation | 4 | 4 | ✅ |
 | M1 Domain Layer | 6 | 6 | ✅ |
 | M2 Infrastructure: Persistence | 9 | 9 | ✅ |
-| M3 Infrastructure: Services & Gateways | 6 | 0 | 🔲 |
-| M4 Application: Commands | 13 | 0 | 🔲 |
+| M3 Infrastructure: Services & Gateways | 6 | 6 | ✅ |
+| M4 Application: Commands | 13 | 13 | ✅ |
 | M5 Application: Queries | 7 | 0 | 🔲 |
 | M6 Thin Controllers | 16 | 0 | 🔲 |
 | M7 Move Http Layer | 6 | 0 | 🔲 |
-| **Total** | **66** | **0** | 🔲 |
+| **Total** | **66** | **38** | 🔲 |
 
 ---
 
@@ -153,27 +153,27 @@ app/
 
 > Goal: all external integrations behind interfaces. Old static `Services/` classes stay alive until Story 6.16.
 
-- [ ] **3.1** — `app/Infrastructure/Services/ResendMailer.php` implements `MailerInterface`  
+- [x] **3.1** — `app/Infrastructure/Services/ResendMailer.php` implements `MailerInterface`  
   _(moves OrderMailer + LowStockMailer + Contact email logic)_  
   + bind `mailer` in `Services.php`
 
-- [ ] **3.2** — `app/Infrastructure/Services/LowStockNotifier.php` implements `LowStockNotifierInterface`  
+- [x] **3.2** — `app/Infrastructure/Services/LowStockNotifier.php` implements `LowStockNotifierInterface`  
   _(wraps ResendMailer + StockRepository; adds `stampLowStockAlert()` to ProductRepositoryInterface + MySqlProductRepository)_  
   + bind `lowStockNotifier` in `Services.php`
 
-- [ ] **3.3** — `app/Infrastructure/Services/DompdfInvoicePdf.php` implements `InvoicePdfInterface`  
+- [x] **3.3** — `app/Infrastructure/Services/DompdfInvoicePdf.php` implements `InvoicePdfInterface`  
   _(moves InvoicePdf::generate() + buildHtml())_  
   + bind `invoicePdf` in `Services.php`
 
-- [ ] **3.4** — `app/Infrastructure/Services/CloudinaryUploader.php` implements `ImageUploaderInterface`  
+- [x] **3.4** — `app/Infrastructure/Services/CloudinaryUploader.php` implements `ImageUploaderInterface`  
   _(moves Upload + UploadPdf cloudinary calls)_  
   + bind `imageUploader` in `Services.php`
 
-- [ ] **3.5** — `app/Infrastructure/Gateways/PayFastGateway.php` implements `PaymentGatewayInterface`  
+- [x] **3.5** — `app/Infrastructure/Gateways/PayFastGateway.php` implements `PaymentGatewayInterface`  
   _(moves `payfastUrl()` + `verifyPayfastSignature()` from Checkout + PaymentNotify)_  
   + bind `payfastGateway` in `Services.php`
 
-- [ ] **3.6** — `app/Infrastructure/Gateways/OzowGateway.php` implements `PaymentGatewayInterface`  
+- [x] **3.6** — `app/Infrastructure/Gateways/OzowGateway.php` implements `PaymentGatewayInterface`  
   _(moves `ozowUrl()` + `verifyOzowHash()`)_  
   + bind `ozowGateway` in `Services.php`
 
@@ -183,21 +183,21 @@ app/
 
 > Goal: every mutation is a Command + Handler pair. Handlers inject interfaces only — no `\Config\Database::connect()`.
 
-- [ ] **4.1** — Admin Auth
+- [x] **4.1** — Admin Auth
   - `app/Application/Core/Commands/AdminLoginCommand.php`
   - `app/Application/Core/Handlers/AdminLoginHandler.php`
 
-- [ ] **4.2** — Settings
+- [x] **4.2** — Settings
   - `app/Application/Core/Commands/UpdateSettingsCommand.php`
   - `app/Application/Core/Handlers/UpdateSettingsHandler.php`
 
-- [ ] **4.3** — Pages
+- [x] **4.3** — Pages
   - `app/Application/Core/Commands/SavePageCommand.php`
   - `app/Application/Core/Commands/DeletePageCommand.php`
   - `app/Application/Core/Handlers/SavePageHandler.php`
   - `app/Application/Core/Handlers/DeletePageHandler.php`
 
-- [ ] **4.4** — Categories
+- [x] **4.4** — Categories
   - `app/Application/Shop/Commands/CreateCategoryCommand.php`
   - `app/Application/Shop/Commands/UpdateCategoryCommand.php`
   - `app/Application/Shop/Commands/DeleteCategoryCommand.php`
@@ -207,7 +207,7 @@ app/
   - `app/Application/Shop/Handlers/DeleteCategoryHandler.php`
   - `app/Application/Shop/Handlers/ReorderCategoriesHandler.php`
 
-- [ ] **4.5** — Products
+- [x] **4.5** — Products
   - `app/Application/Shop/Commands/CreateProductCommand.php`
   - `app/Application/Shop/Commands/UpdateProductCommand.php`
   - `app/Application/Shop/Commands/DeleteProductCommand.php`
@@ -215,7 +215,7 @@ app/
   - `app/Application/Shop/Handlers/UpdateProductHandler.php`
   - `app/Application/Shop/Handlers/DeleteProductHandler.php`
 
-- [ ] **4.6** — Product Images
+- [x] **4.6** — Product Images
   - `app/Application/Shop/Commands/AddProductImageCommand.php`
   - `app/Application/Shop/Commands/DeleteProductImageCommand.php`
   - `app/Application/Shop/Commands/ReorderProductImagesCommand.php`
@@ -223,29 +223,29 @@ app/
   - `app/Application/Shop/Handlers/DeleteProductImageHandler.php`
   - `app/Application/Shop/Handlers/ReorderProductImagesHandler.php`
 
-- [ ] **4.7** — Stock Adjustment
+- [x] **4.7** — Stock Adjustment
   - `app/Application/Shop/Commands/AdjustStockCommand.php`
   - `app/Application/Shop/Handlers/AdjustStockHandler.php`
 
-- [ ] **4.8** — Order Status & Refund
+- [x] **4.8** — Order Status & Refund
   - `app/Application/Orders/Commands/UpdateOrderStatusCommand.php`
   - `app/Application/Orders/Commands/RefundOrderCommand.php`
   - `app/Application/Orders/Handlers/UpdateOrderStatusHandler.php` _(uses `OrderStatus::canTransitionTo()`)_
   - `app/Application/Orders/Handlers/RefundOrderHandler.php` _(restores stock)_
 
-- [ ] **4.9** — Payment Notifications
+- [x] **4.9** — Payment Notifications
   - `app/Application/Orders/Commands/RecordPaymentCommand.php`
   - `app/Application/Orders/Commands/CancelOrderCommand.php`
   - `app/Application/Orders/Handlers/RecordPaymentHandler.php` _(marks paid, sends confirmation email)_
   - `app/Application/Orders/Handlers/CancelOrderHandler.php` _(marks cancelled, restores stock)_
 
-- [ ] **4.10** — Checkout / Place Order
+- [x] **4.10** — Checkout / Place Order
   - `app/Application/Orders/Commands/PlaceOrderCommand.php`
   - `app/Application/Orders/DTOs/CartItemDTO.php`
   - `app/Application/Orders/DTOs/PlaceOrderResult.php`
   - `app/Application/Orders/Handlers/PlaceOrderHandler.php` _(validate, compute totals, create order, decrement stock)_
 
-- [ ] **4.11** — Customer Auth
+- [x] **4.11** — Customer Auth
   - `app/Application/Orders/Commands/RegisterCustomerCommand.php`
   - `app/Application/Orders/Commands/LoginCustomerCommand.php`
   - `app/Application/Orders/Commands/LogoutCustomerCommand.php`
@@ -255,13 +255,13 @@ app/
   - `app/Application/Orders/Handlers/LogoutCustomerHandler.php`
   - `app/Application/Orders/Handlers/UpdateCustomerHandler.php`
 
-- [ ] **4.12** — Uploads
+- [x] **4.12** — Uploads
   - `app/Application/Core/Commands/UploadImageCommand.php`
   - `app/Application/Core/Commands/UploadPdfCommand.php`
   - `app/Application/Core/Handlers/UploadImageHandler.php`
   - `app/Application/Core/Handlers/UploadPdfHandler.php`
 
-- [ ] **4.13** — Contact
+- [x] **4.13** — Contact
   - `app/Application/Core/Commands/SendContactEnquiryCommand.php`
   - `app/Application/Core/Handlers/SendContactEnquiryHandler.php`
 
