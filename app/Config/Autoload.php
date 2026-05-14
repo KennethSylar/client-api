@@ -39,6 +39,12 @@ class Autoload extends AutoloadConfig
      */
     public $psr4 = [
         APP_NAMESPACE => APPPATH,
+        // Explicit entries for the layered architecture directories.
+        // APP_NAMESPACE ('App') already maps to APPPATH so these are
+        // belt-and-suspenders for IDE tooling and future package extraction.
+        'App\\Domain'         => APPPATH . 'Domain',
+        'App\\Application'    => APPPATH . 'Application',
+        'App\\Infrastructure' => APPPATH . 'Infrastructure',
     ];
 
     /**

@@ -14,6 +14,11 @@ $routes->setDefaultController('Home');
 $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
 
+// Catch-all OPTIONS handler for CORS preflight (auto-routing is disabled)
+$routes->options('(:any)', static function () {
+    return service('response')->setStatusCode(200)->setBody('');
+});
+
 // ----------------------------------------------------------------
 // Public content routes (no authentication required)
 // ----------------------------------------------------------------

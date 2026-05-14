@@ -295,6 +295,7 @@ class Checkout extends BaseController
 
         $amount = number_format($totalCents / 100, 2, '.', '');
 
+        // PayFast requires fields in this exact order for signature calculation
         $data = [
             'merchant_id'  => $merchantId,
             'merchant_key' => $merchantKey,
@@ -304,13 +305,19 @@ class Checkout extends BaseController
             'name_first'   => $body['first_name'],
             'name_last'    => $body['last_name'],
             'email_address'=> $body['email'],
-            'amount'       => $amount,
             'm_payment_id' => (string)$orderId,
+            'amount'       => $amount,
             'item_name'    => "Order #{$orderId}",
         ];
 
-        // Signature
-        $sigString = http_build_query($data);
+        // Signature — PayFast uses urlencode() which converts spaces to +
+        $sigParts = [];
+        foreach ($data as $key => $value) {
+            if ($value !== '' && $value !== null) {
+                $sigParts[] = $key . '=' . urlencode($value);
+            }
+        }
+        $sigString = implode('&', $sigParts);
         if ($passphrase !== '') {
             $sigString .= '&passphrase=' . urlencode($passphrase);
         }

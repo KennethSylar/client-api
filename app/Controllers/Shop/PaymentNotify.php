@@ -186,12 +186,15 @@ class PaymentNotify extends BaseController
     {
         $passphrase = $db->table('settings')->where('key', 'shop_payfast_passphrase')->get()->getRowArray()['value'] ?? '';
 
-        // Remove signature from data before hashing
-        $data = $post;
-        unset($data['signature']);
-        ksort($data);
-
-        $sigString = http_build_query($data);
+        // Build signature string preserving PayFast's field order (do NOT ksort)
+        // Include empty values — PayFast includes them in its own signature
+        $pfParamString = '';
+        foreach ($post as $key => $value) {
+            if ($key === 'signature') continue;
+            $pfParamString .= $key . '=' . urlencode(trim((string)$value)) . '&';
+        }
+        // Remove trailing ampersand
+        $sigString = rtrim($pfParamString, '&');
         if ($passphrase !== '') {
             $sigString .= '&passphrase=' . urlencode($passphrase);
         }

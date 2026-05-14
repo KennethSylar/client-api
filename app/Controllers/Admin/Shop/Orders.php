@@ -113,10 +113,19 @@ class Orders extends BaseController
             return $this->error('Invalid status.', 400);
         }
 
-        $db->table('shop_orders')->where('id', $id)->update([
+        $updateFields = [
             'status'     => $newStatus,
             'updated_at' => date('Y-m-d H:i:s'),
-        ]);
+        ];
+
+        if ($newStatus === 'shipped') {
+            $carrier = trim($body['tracking_carrier'] ?? '');
+            $number  = trim($body['tracking_number']  ?? '');
+            if ($carrier !== '') $updateFields['tracking_carrier'] = $carrier;
+            if ($number  !== '') $updateFields['tracking_number']  = $number;
+        }
+
+        $db->table('shop_orders')->where('id', $id)->update($updateFields);
 
         $db->table('shop_order_status_log')->insert([
             'order_id'    => $id,
@@ -250,10 +259,12 @@ class Orders extends BaseController
             'currency'        => $order['currency'],
             'payment_gateway' => $order['payment_gateway'],
             'payment_reference'=> $order['payment_reference'],
-            'paid_at'         => $order['paid_at'],
-            'notes'           => $order['notes'],
-            'created_at'      => $order['created_at'],
-            'updated_at'      => $order['updated_at'],
+            'paid_at'          => $order['paid_at'],
+            'notes'            => $order['notes'],
+            'tracking_carrier' => $order['tracking_carrier'] ?? null,
+            'tracking_number'  => $order['tracking_number']  ?? null,
+            'created_at'       => $order['created_at'],
+            'updated_at'       => $order['updated_at'],
         ];
     }
 

@@ -57,8 +57,8 @@ class Auth extends BaseController
         ]);
 
         // Set HTTP-only cookie (24 h)
-        // `secure` is derived from baseURL protocol — true in prod (https), false in dev (http)
-        $isHttps = str_starts_with(config(App::class)->baseURL, 'https');
+        // Only mark secure in production — dev may use HTTP even if baseURL is tunnelled via HTTPS
+        $isHttps = ENVIRONMENT === 'production' && str_starts_with(config(App::class)->baseURL, 'https');
         set_cookie([
             'name'     => 'jnv_admin_session',
             'value'    => $token,
