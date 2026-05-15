@@ -2,21 +2,21 @@
 
 namespace Config;
 
-use App\Filters\AdminAuth;
-use App\Filters\Cors;
+use App\Infrastructure\Http\Filters\AdminAuth;
+use App\Infrastructure\Http\Filters\Cors;
 use CodeIgniter\Config\BaseConfig;
 
 class Filters extends BaseConfig
 {
     // Aliases make filters easy to reference by short name
     public array $aliases = [
-        'csrf'      => \CodeIgniter\Filters\CSRF::class,
-        'toolbar'   => \CodeIgniter\Filters\DebugToolbar::class,
-        'honeypot'  => \CodeIgniter\Filters\Honeypot::class,
+        'csrf'         => \CodeIgniter\Filters\CSRF::class,
+        'toolbar'      => \CodeIgniter\Filters\DebugToolbar::class,
+        'honeypot'     => \CodeIgniter\Filters\Honeypot::class,
         'invalidchars' => \CodeIgniter\Filters\InvalidChars::class,
-        'secureheaders' => \CodeIgniter\Filters\SecureHeaders::class,
-        'adminauth' => AdminAuth::class,
-        'cors'      => Cors::class,
+        'secureheaders'=> \CodeIgniter\Filters\SecureHeaders::class,
+        'adminauth'    => AdminAuth::class,
+        'cors'         => Cors::class,
     ];
 
     // Always-on filters

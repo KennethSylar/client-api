@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Controllers\Shop;
+namespace App\Infrastructure\Http\Controllers\Shop;
 
 use App\Application\Orders\Commands\LoginCustomerCommand;
 use App\Application\Orders\Commands\LogoutCustomerCommand;
 use App\Application\Orders\Commands\RegisterCustomerCommand;
 use App\Application\Orders\Commands\UpdateCustomerCommand;
 use App\Application\Orders\Queries\GetCustomerOrdersQuery;
-use App\Controllers\BaseController;
 use App\Domain\Orders\Customer;
+use App\Infrastructure\Http\Controllers\BaseController;
 
 class CustomerAuth extends BaseController
 {

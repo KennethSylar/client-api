@@ -66,12 +66,12 @@ Before implementing any new endpoint:
 
 ```
 HTTP Request
-  → Infrastructure\Http\Controller  (parse input → build Command/Query)
-  → Application\Handler              (orchestrate domain, call ports)
-  → Domain\Entity / Repository       (pure business logic)
-  → Infrastructure\Persistence       (DB query, returns entity)
-  → Application\Handler              (build response DTO)
-  → Infrastructure\Http\Controller   (JSON response)
+  → Infrastructure\Http\Controllers\*  (parse input → build Command/Query)
+  → Application\Handler                (orchestrate domain, call ports)
+  → Domain\Entity / Repository         (pure business logic)
+  → Infrastructure\Persistence         (DB query, returns entity)
+  → Application\Handler                (build response DTO)
+  → Infrastructure\Http\Controllers\*  (JSON response)
 ```
 
 ### Wiring a New Command
@@ -102,7 +102,7 @@ public static function myHandler(bool $getShared = true): MyHandler {
     return new MyHandler(static::productRepository());
 }
 
-// 4. app/Infrastructure/Http/Controllers/Admin/Shop/ProductsController.php
+// 4. app/Infrastructure/Http/Controllers/Admin/Shop/Products.php
 $cmd    = new MyCommand($id, $body['name']);
 $result = service('myHandler')->handle($cmd);
 return $this->ok(['product' => $result->toArray()]);

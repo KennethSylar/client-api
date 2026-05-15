@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Infrastructure\Http\Controllers;
 
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\RequestInterface;
@@ -62,9 +62,7 @@ abstract class BaseController extends Controller
      */
     protected function shopOffline(): ?\CodeIgniter\HTTP\ResponseInterface
     {
-        $db      = \Config\Database::connect();
-        $enabled = $db->table('settings')->where('key', 'shop_enabled')->get()->getRowArray();
-        if (($enabled['value'] ?? '0') !== '1') {
+        if (service('settingsRepository')->get('shop_enabled') !== '1') {
             return $this->error('Shop is currently unavailable.', 503);
         }
         return null;

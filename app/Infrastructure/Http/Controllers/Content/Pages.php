@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Controllers\Content;
+namespace App\Infrastructure\Http\Controllers\Content;
 
 use App\Application\Core\Queries\GetPageQuery;
 use App\Application\Core\Queries\ListPagesQuery;
-use App\Controllers\BaseController;
+use App\Infrastructure\Http\Controllers\BaseController;
 
 class Pages extends BaseController
 {

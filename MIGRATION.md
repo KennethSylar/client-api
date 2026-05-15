@@ -46,8 +46,8 @@ app/
 | M4 Application: Commands | 13 | 13 | ✅ |
 | M5 Application: Queries | 7 | 7 | ✅ |
 | M6 Thin Controllers | 16 | 16 | ✅ |
-| M7 Move Http Layer | 6 | 0 | 🔲 |
-| **Total** | **66** | **61** | 🔲 |
+| M7 Move Http Layer | 6 | 6 | ✅ |
+| **Total** | **66** | **67** | ✅ |
 
 ---
 
@@ -338,37 +338,35 @@ app/
 
 > Goal: directory structure enforces layer boundaries. Controllers live in Infrastructure, not alongside domain code.
 
-- [ ] **7.1** — Move Filters
-  - Create `app/Infrastructure/Http/Filters/AdminAuthFilter.php` (namespace updated)
-  - Create `app/Infrastructure/Http/Filters/CorsFilter.php`
-  - Update `app/Config/Filters.php` alias registrations
-  - Delete `app/Filters/AdminAuth.php` + `Cors.php`
+- [x] **7.1** — Move Filters
+  - Created `app/Infrastructure/Http/Filters/AdminAuth.php` (uses `adminSessionRepository->find()`)
+  - Created `app/Infrastructure/Http/Filters/Cors.php`
+  - Updated `app/Config/Filters.php` alias registrations
+  - Deleted `app/Filters/`
 
-- [ ] **7.2** — Move BaseController
-  - Create `app/Infrastructure/Http/Controllers/BaseController.php`
-  - Update all thinned controllers to `use App\Infrastructure\Http\Controllers\BaseController`
-  - `shopOffline()` now calls `service('settingsRepository')`
-  - Delete `app/Controllers/BaseController.php`
+- [x] **7.2** — Move BaseController
+  - Created `app/Infrastructure/Http/Controllers/BaseController.php`
+  - `shopOffline()` now calls `service('settingsRepository')->get('shop_enabled')`
+  - Deleted `app/Controllers/BaseController.php`
 
-- [ ] **7.3** — Move Admin controllers
+- [x] **7.3** — Move Admin controllers
   - All 10 admin controller files → `app/Infrastructure/Http/Controllers/Admin/`
-  - Update namespaces + `use` statements
-  - Update `app/Config/Routes.php` admin group
+  - Namespaces + `use` statements updated
+  - `app/Config/Routes.php` updated to FQCN format
 
-- [ ] **7.4** — Move Shop controllers
+- [x] **7.4** — Move Shop controllers
   - All 7 shop controller files → `app/Infrastructure/Http/Controllers/Shop/`
-  - Update `app/Config/Routes.php` shop routes
+  - `app/Config/Routes.php` shop routes updated
 
-- [ ] **7.5** — Move Content + Contact controllers
-  - `app/Infrastructure/Http/Controllers/Content/`
-  - `app/Infrastructure/Http/Controllers/ContactController.php`
-  - Update `app/Config/Routes.php`
+- [x] **7.5** — Move Content + Contact controllers
+  - `app/Infrastructure/Http/Controllers/Content/Pages.php` + `Settings.php`
+  - `app/Infrastructure/Http/Controllers/Contact.php`
+  - `app/Config/Routes.php` updated
 
-- [ ] **7.6** — Final cleanup
-  - Verify `app/Controllers/` is empty → delete directory
-  - Verify `app/Filters/` is empty → delete directory
-  - Update `CLAUDE.md` — remove old static patterns, document new handler dispatch
-  - Run `php spark serve` — confirm zero errors
+- [x] **7.6** — Final cleanup
+  - Deleted `app/Controllers/`
+  - Deleted `app/Filters/`
+  - `php spark routes` — zero errors, all routes resolve to Infrastructure namespace
 
 ---
 

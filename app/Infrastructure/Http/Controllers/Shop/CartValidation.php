@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Controllers\Shop;
+namespace App\Infrastructure\Http\Controllers\Shop;
 
-use App\Controllers\BaseController;
+use App\Infrastructure\Http\Controllers\BaseController;
 
 /**
  * Shop\CartValidation  (public)
@@ -16,30 +16,6 @@ use App\Controllers\BaseController;
  *
  * Called by the frontend before opening checkout to prevent
  * stale-price and oversell race conditions.
- *
- * Request body:
- * {
- *   "items": [
- *     { "product_id": 1, "variant_id": null, "qty": 2 },
- *     { "product_id": 3, "variant_id": 7,    "qty": 1 }
- *   ]
- * }
- *
- * Response 200:
- * {
- *   "ok": true,
- *   "items": [
- *     {
- *       "product_id": 1, "variant_id": null,
- *       "name": "Widget", "variant_name": null,
- *       "price": 99.99, "price_adjustment": 0.00,
- *       "effective_price": 99.99,
- *       "qty_requested": 2, "qty_available": 2, "qty_adjusted": 2,
- *       "in_stock": true, "stock_changed": false, "price_changed": false
- *     }
- *   ],
- *   "has_issues": false   // true if any item has stock_changed or price_changed
- * }
  */
 class CartValidation extends BaseController
 {
@@ -88,7 +64,7 @@ class CartValidation extends BaseController
                     'in_stock'        => false,
                     'stock_changed'   => true,
                     'price_changed'   => false,
-                    'removed'         => true, // product no longer available
+                    'removed'         => true,
                 ];
                 $hasIssues = true;
                 continue;
@@ -120,7 +96,7 @@ class CartValidation extends BaseController
             $effectivePrice = $price + $priceAdjustment;
 
             // Determine available qty
-            $qtyAvailable = $trackStock ? $stockQty : $qtyRequested; // unlimited if untracked
+            $qtyAvailable = $trackStock ? $stockQty : $qtyRequested;
             $qtyAdjusted  = min($qtyRequested, max(0, $qtyAvailable));
             $inStock      = $qtyAvailable > 0;
 

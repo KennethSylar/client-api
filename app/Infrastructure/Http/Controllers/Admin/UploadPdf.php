@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Controllers\Admin;
+namespace App\Infrastructure\Http\Controllers\Admin;
 
 use App\Application\Core\Commands\UploadPdfCommand;
-use App\Controllers\BaseController;
+use App\Infrastructure\Http\Controllers\BaseController;
 
 class UploadPdf extends BaseController
 {

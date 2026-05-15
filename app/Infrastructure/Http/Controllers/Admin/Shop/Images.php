@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Controllers\Admin\Shop;
+namespace App\Infrastructure\Http\Controllers\Admin\Shop;
 
 use App\Application\Shop\Commands\AddProductImageCommand;
 use App\Application\Shop\Commands\DeleteProductImageCommand;
 use App\Application\Shop\Commands\ReorderProductImagesCommand;
-use App\Controllers\BaseController;
+use App\Infrastructure\Http\Controllers\BaseController;
 
 class Images extends BaseController
 {

@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Controllers\Admin\Shop;
+namespace App\Infrastructure\Http\Controllers\Admin\Shop;
 
 use App\Application\Shop\Commands\CreateProductCommand;
 use App\Application\Shop\Commands\DeleteProductCommand;
 use App\Application\Shop\Commands\UpdateProductCommand;
 use App\Application\Shop\Queries\ListProductsQuery;
-use App\Controllers\BaseController;
 use App\Domain\Shop\Product;
+use App\Infrastructure\Http\Controllers\BaseController;
 
 class Products extends BaseController
 {

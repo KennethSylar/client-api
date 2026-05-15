@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Controllers\Admin\Shop;
+namespace App\Infrastructure\Http\Controllers\Admin\Shop;
 
 use App\Application\Shop\Commands\AdjustStockCommand;
 use App\Application\Shop\Queries\GetStockHistoryQuery;
-use App\Controllers\BaseController;
+use App\Infrastructure\Http\Controllers\BaseController;
 
 class Stock extends BaseController
 {
@@ -45,31 +45,5 @@ class Stock extends BaseController
         }
 
         return $this->ok(['adjustments' => $adjustments]);
-    }
-
-    /**
-     * @deprecated Use service('stockRepository')->logAdjustment() instead.
-     */
-    public static function logAdjustment(
-        \CodeIgniter\Database\BaseConnection $db,
-        int     $productId,
-        ?int    $variantId,
-        int     $delta,
-        string  $source      = 'manual',
-        ?int    $referenceId = null,
-        string  $note        = '',
-        int     $qtyBefore   = 0,
-        int     $qtyAfter    = 0
-    ): void {
-        $db->table('shop_stock_adjustments')->insert([
-            'product_id'   => $productId,
-            'variant_id'   => $variantId,
-            'delta'        => $delta,
-            'qty_before'   => $qtyBefore,
-            'qty_after'    => $qtyAfter,
-            'source'       => $source,
-            'reference_id' => $referenceId,
-            'note'         => $note,
-        ]);
     }
 }

@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Controllers\Admin\Shop;
+namespace App\Infrastructure\Http\Controllers\Admin\Shop;
 
 use App\Application\Orders\Commands\RefundOrderCommand;
 use App\Application\Orders\Commands\UpdateOrderStatusCommand;
 use App\Application\Orders\Queries\GetOrderInvoiceQuery;
 use App\Application\Orders\Queries\GetOrderQuery;
 use App\Application\Orders\Queries\ListOrdersQuery;
-use App\Controllers\BaseController;
 use App\Domain\Orders\Order;
+use App\Infrastructure\Http\Controllers\BaseController;
 
 class Orders extends BaseController
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Infrastructure\Http\Controllers;
 
 use App\Application\Core\Commands\SendContactEnquiryCommand;
 

@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Controllers\Content;
+namespace App\Infrastructure\Http\Controllers\Content;
 
 use App\Application\Core\Queries\GetSettingsQuery;
-use App\Controllers\BaseController;
+use App\Infrastructure\Http\Controllers\BaseController;
 
 class Settings extends BaseController
 {

@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Controllers\Admin\Shop;
+namespace App\Infrastructure\Http\Controllers\Admin\Shop;
 
 use App\Application\Shop\Commands\CreateCategoryCommand;
 use App\Application\Shop\Commands\DeleteCategoryCommand;
 use App\Application\Shop\Commands\ReorderCategoriesCommand;
 use App\Application\Shop\Commands\UpdateCategoryCommand;
-use App\Controllers\BaseController;
+use App\Infrastructure\Http\Controllers\BaseController;
 
 class Categories extends BaseController
 {

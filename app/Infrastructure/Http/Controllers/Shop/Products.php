@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Controllers\Shop;
+namespace App\Infrastructure\Http\Controllers\Shop;
 
 use App\Application\Shop\Queries\GetProductQuery;
 use App\Application\Shop\Queries\ListProductsQuery;
-use App\Controllers\BaseController;
 use App\Domain\Shop\Product;
+use App\Infrastructure\Http\Controllers\BaseController;
 
 class Products extends BaseController
 {

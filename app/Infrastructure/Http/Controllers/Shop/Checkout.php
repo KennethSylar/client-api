@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Controllers\Shop;
+namespace App\Infrastructure\Http\Controllers\Shop;
 
 use App\Application\Orders\Commands\PlaceOrderCommand;
 use App\Application\Orders\DTOs\CartItemDTO;
-use App\Controllers\BaseController;
+use App\Infrastructure\Http\Controllers\BaseController;
 
 class Checkout extends BaseController
 {

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Controllers\Shop;
+namespace App\Infrastructure\Http\Controllers\Shop;
 
 use App\Application\Orders\Commands\CancelOrderCommand;
 use App\Application\Orders\Commands\RecordPaymentCommand;
 use App\Application\Orders\Queries\GetOrderQuery;
-use App\Controllers\BaseController;
+use App\Infrastructure\Http\Controllers\BaseController;
 
 class PaymentNotify extends BaseController
 {
