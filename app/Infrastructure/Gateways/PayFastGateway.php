@@ -21,6 +21,12 @@ class PayFastGateway implements PaymentGatewayInterface
         $amount = number_format($order->total->amountCents / 100, 2, '.', '');
 
         // PayFast requires fields in this exact order for signature calculation
+        $isTest = env('PAYFAST_TEST', 'true') !== 'false';
+        $host   = $isTest ? 'sandbox.payfast.co.za' : 'www.payfast.co.za';
+
+        // PayFast requires fields in this exact order for signature calculation.
+        // In sandbox mode use the official buyer account — PayFast blocks payment
+        // when the buyer email matches the merchant's account email.
         $data = [
             'merchant_id'   => $merchantId,
             'merchant_key'  => $merchantKey,
@@ -29,7 +35,7 @@ class PayFastGateway implements PaymentGatewayInterface
             'notify_url'    => $notifyUrl,
             'name_first'    => $order->firstName,
             'name_last'     => $order->lastName,
-            'email_address' => $order->email,
+            'email_address' => $isTest ? 'sbtu01@payfast.co.za' : $order->email,
             'm_payment_id'  => (string) $order->id,
             'amount'        => $amount,
             'item_name'     => "Order #{$order->id}",
@@ -46,9 +52,6 @@ class PayFastGateway implements PaymentGatewayInterface
             $sigString .= '&passphrase=' . urlencode($passphrase);
         }
         $data['signature'] = md5($sigString);
-
-        $isTest = env('PAYFAST_TEST', 'true') !== 'false';
-        $host   = $isTest ? 'sandbox.payfast.co.za' : 'www.payfast.co.za';
 
         return "https://{$host}/eng/process?" . http_build_query($data);
     }

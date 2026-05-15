@@ -41,6 +41,10 @@ class Orders extends BaseController
             'tracking_number'  => $order->trackingNumber,
             'created_at'       => $order->createdAt->format('Y-m-d H:i:s'),
             'items'            => array_map(fn($i) => [
+                'product_id'       => $i->productId,
+                'variant_id'       => $i->variantId,
+                'product_slug'     => $i->productSlug,
+                'cover_image'      => $i->coverImage,
                 'product_name'     => $i->productName,
                 'variant_name'     => $i->variantName,
                 'qty'              => $i->qty,

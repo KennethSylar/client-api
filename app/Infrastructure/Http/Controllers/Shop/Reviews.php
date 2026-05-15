@@ -28,6 +28,31 @@ class Reviews extends BaseController
         ]);
     }
 
+    public function canReview(int $productId): \CodeIgniter\HTTP\ResponseInterface
+    {
+        if ($off = $this->shopOffline()) return $off;
+
+        $token = $this->getBearerToken();
+        if (!$token) {
+            return $this->ok(['can_review' => false]);
+        }
+
+        $customer = service('customerRepository')->findByToken($token);
+        if (!$customer) {
+            return $this->ok(['can_review' => false]);
+        }
+
+        $db = \Config\Database::connect();
+        $hasPurchased = $db->table('shop_orders o')
+            ->join('shop_order_items oi', 'oi.order_id = o.id', 'inner')
+            ->where('o.customer_id', $customer->id)
+            ->where('o.status', 'delivered')
+            ->where('oi.product_id', $productId)
+            ->countAllResults() > 0;
+
+        return $this->ok(['can_review' => $hasPurchased]);
+    }
+
     public function store(int $productId): \CodeIgniter\HTTP\ResponseInterface
     {
         if ($off = $this->shopOffline()) return $off;
@@ -40,6 +65,19 @@ class Reviews extends BaseController
         $customer = service('customerRepository')->findByToken($token);
         if (!$customer) {
             return $this->unauthorized('Session expired or invalid.');
+        }
+
+        // ── Verified purchase check ───────────────────────────────────
+        $db = \Config\Database::connect();
+        $hasPurchased = $db->table('shop_orders o')
+            ->join('shop_order_items oi', 'oi.order_id = o.id', 'inner')
+            ->where('o.customer_id', $customer->id)
+            ->where('o.status', 'delivered')
+            ->where('oi.product_id', $productId)
+            ->countAllResults() > 0;
+
+        if (!$hasPurchased) {
+            return $this->error('You can only review products you have purchased and received.', 403);
         }
 
         $body = $this->jsonBody();

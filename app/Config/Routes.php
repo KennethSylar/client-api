@@ -39,6 +39,7 @@ $routes->get('admin/me',      '\App\Infrastructure\Http\Controllers\Admin\Auth::
 // ----------------------------------------------------------------
 // Protected admin routes
 // ----------------------------------------------------------------
+$routes->get('admin/settings', '\App\Infrastructure\Http\Controllers\Admin\Settings::index',  ['filter' => 'adminauth']);
 $routes->put('admin/settings', '\App\Infrastructure\Http\Controllers\Admin\Settings::update', ['filter' => 'adminauth']);
 
 // ----------------------------------------------------------------
@@ -60,6 +61,16 @@ $routes->post('shop/account/logout',     '\App\Infrastructure\Http\Controllers\S
 $routes->get( 'shop/account/me',         '\App\Infrastructure\Http\Controllers\Shop\CustomerAuth::me');
 $routes->put( 'shop/account/me',         '\App\Infrastructure\Http\Controllers\Shop\CustomerAuth::update');
 $routes->get( 'shop/account/orders',     '\App\Infrastructure\Http\Controllers\Shop\CustomerAuth::orders');
+
+// Customer order actions
+$routes->post('shop/account/orders/(:alphanum)/cancel',         '\App\Infrastructure\Http\Controllers\Shop\CustomerOrders::cancel/$1');
+$routes->post('shop/account/orders/(:alphanum)/refund-request', '\App\Infrastructure\Http\Controllers\Shop\CustomerOrders::requestRefund/$1');
+
+// Customer saved addresses
+$routes->get(   'shop/account/addresses',         '\App\Infrastructure\Http\Controllers\Shop\CustomerAddresses::index');
+$routes->post(  'shop/account/addresses',         '\App\Infrastructure\Http\Controllers\Shop\CustomerAddresses::store');
+$routes->put(   'shop/account/addresses/(:num)',  '\App\Infrastructure\Http\Controllers\Shop\CustomerAddresses::update/$1');
+$routes->delete('shop/account/addresses/(:num)',  '\App\Infrastructure\Http\Controllers\Shop\CustomerAddresses::destroy/$1');
 
 // ----------------------------------------------------------------
 // Shop — admin (protected)
@@ -89,8 +100,9 @@ $routes->post(  'admin/shop/orders/(:num)/refund',             '\App\Infrastruct
 $routes->get(   'admin/shop/orders/(:num)/invoice',            '\App\Infrastructure\Http\Controllers\Admin\Shop\Orders::invoice/$1',    ['filter' => 'adminauth']);
 
 // Product reviews — public
-$routes->get( 'shop/products/(:num)/reviews', '\App\Infrastructure\Http\Controllers\Shop\Reviews::index/$1');
-$routes->post('shop/products/(:num)/reviews', '\App\Infrastructure\Http\Controllers\Shop\Reviews::store/$1');
+$routes->get( 'shop/products/(:num)/reviews',            '\App\Infrastructure\Http\Controllers\Shop\Reviews::index/$1');
+$routes->get( 'shop/products/(:num)/reviews/can-review', '\App\Infrastructure\Http\Controllers\Shop\Reviews::canReview/$1');
+$routes->post('shop/products/(:num)/reviews',            '\App\Infrastructure\Http\Controllers\Shop\Reviews::store/$1');
 
 // Product reviews — admin
 $routes->get(   'admin/shop/reviews',         '\App\Infrastructure\Http\Controllers\Admin\Shop\Reviews::index',        ['filter' => 'adminauth']);

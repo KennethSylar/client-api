@@ -23,8 +23,10 @@ final class GetSettingsHandler
             'site_name', 'site_tagline', 'contact_email', 'contact_phone',
             'contact_address', 'social_facebook', 'social_instagram',
             'social_linkedin', 'social_twitter', 'accreditations',
-            'shop_enabled', 'shop_currency', 'shop_vat_enabled', 'shop_vat_rate',
+            'shop_enabled', 'shop_mode', 'shop_featured_product_slug',
+            'shop_currency', 'shop_vat_enabled', 'shop_vat_rate',
             'shop_shipping_rate', 'shop_free_shipping_from',
+            'shop_payfast_enabled', 'shop_ozow_enabled', 'shop_wishlist_enabled',
         ]);
     }
 }

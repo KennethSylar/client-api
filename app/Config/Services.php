@@ -72,6 +72,12 @@ class Services extends BaseService
         return new \App\Infrastructure\Persistence\MySqlCustomerRepository();
     }
 
+    public static function customerAddressRepository(bool $getShared = true): \App\Domain\Orders\CustomerAddressRepositoryInterface
+    {
+        if ($getShared) return static::getSharedInstance('customerAddressRepository');
+        return new \App\Infrastructure\Persistence\MySqlCustomerAddressRepository(\Config\Database::connect());
+    }
+
     public static function reviewRepository(bool $getShared = true): \App\Domain\Shop\ReviewRepositoryInterface
     {
         if ($getShared) return static::getSharedInstance('reviewRepository');

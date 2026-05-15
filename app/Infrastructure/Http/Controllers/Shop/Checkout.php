@@ -56,7 +56,15 @@ class Checkout extends BaseController
             $cartItems[] = new CartItemDTO($productId, $variantId, $qty);
         }
 
-        // ── 4. Place order (validates stock, computes totals, creates order) ──
+        // ── 4. Resolve optional customer (logged-in users link order to account) ──
+        $customerId = null;
+        $bearerToken = substr($this->request->getHeaderLine('Authorization'), 7);
+        if ($bearerToken) {
+            $customer = service('customerRepository')->findByToken($bearerToken);
+            if ($customer) $customerId = $customer->id;
+        }
+
+        // ── 5. Place order (validates stock, computes totals, creates order) ──
         try {
             $result = service('placeOrderHandler')->handle(new PlaceOrderCommand(
                 firstName:    trim($body['first_name']),
@@ -72,6 +80,7 @@ class Checkout extends BaseController
                 gateway:      $gateway,
                 items:        $cartItems,
                 notes:        trim($body['notes'] ?? ''),
+                customerId:   $customerId,
             ));
         } catch (\DomainException $e) {
             return $this->error($e->getMessage(), 409);
@@ -97,7 +106,7 @@ class Checkout extends BaseController
             $paymentUrl = service('payfastGateway')->buildPaymentUrl(
                 order:           $order,
                 gatewaySettings: $gatewaySettings,
-                returnUrl:       "{$siteBase}/shop/order/{$order->token}",
+                returnUrl:       "{$siteBase}/shop/order/{$order->token}?ref=payment",
                 cancelUrl:       "{$siteBase}/checkout",
                 notifyUrl:       "{$appBase}/shop/payment/payfast/notify",
             );
@@ -110,7 +119,7 @@ class Checkout extends BaseController
             $paymentUrl = service('ozowGateway')->buildPaymentUrl(
                 order:           $order,
                 gatewaySettings: $gatewaySettings,
-                returnUrl:       "{$siteBase}/shop/order/{$order->token}",
+                returnUrl:       "{$siteBase}/shop/order/{$order->token}?ref=payment",
                 cancelUrl:       "{$siteBase}/checkout",
                 notifyUrl:       "{$appBase}/shop/payment/ozow/notify",
             );

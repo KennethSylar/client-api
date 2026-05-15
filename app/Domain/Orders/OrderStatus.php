@@ -12,6 +12,7 @@ enum OrderStatus: string
     case Cancelled         = 'cancelled';
     case Refunded          = 'refunded';
     case PartiallyRefunded = 'partially_refunded';
+    case RefundRequested   = 'refund_requested';
 
     /** Returns true when a transition from $this → $new is permitted. */
     public function canTransitionTo(self $new): bool
@@ -21,7 +22,8 @@ enum OrderStatus: string
             self::Paid              => in_array($new, [self::Processing, self::Shipped, self::Cancelled, self::Refunded, self::PartiallyRefunded], true),
             self::Processing        => in_array($new, [self::Shipped, self::Cancelled, self::Refunded, self::PartiallyRefunded], true),
             self::Shipped           => in_array($new, [self::Delivered, self::Refunded, self::PartiallyRefunded], true),
-            self::Delivered         => in_array($new, [self::Refunded, self::PartiallyRefunded], true),
+            self::Delivered         => in_array($new, [self::Refunded, self::PartiallyRefunded, self::RefundRequested], true),
+            self::RefundRequested   => in_array($new, [self::Refunded, self::PartiallyRefunded], true),
             self::PartiallyRefunded => in_array($new, [self::Refunded, self::PartiallyRefunded], true),
             self::Cancelled,
             self::Refunded          => false,

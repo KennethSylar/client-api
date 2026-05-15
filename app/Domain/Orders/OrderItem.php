@@ -17,6 +17,8 @@ final class OrderItem
         public readonly Money   $unitPrice,
         public readonly Money   $lineTotal,
         public readonly ?string $sku,
+        public readonly ?string $productSlug,
+        public readonly ?string $coverImage,
     ) {}
 
     public static function fromArray(array $row, string $currency = 'ZAR'): self
@@ -32,6 +34,8 @@ final class OrderItem
             unitPrice:   Money::fromCents((int) $row['unit_price_cents'], $currency),
             lineTotal:   Money::fromCents((int) $row['line_total_cents'], $currency),
             sku:               $row['sku'] ?? null,
+            productSlug:       $row['product_slug']       ?? null,
+            coverImage:        $row['product_cover_image'] ?? null,
         );
     }
 

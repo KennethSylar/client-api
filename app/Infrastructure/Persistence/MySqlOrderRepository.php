@@ -207,8 +207,10 @@ class MySqlOrderRepository extends AbstractMysqlRepository implements OrderRepos
         $currency = $row['currency'] ?? 'ZAR';
         $order    = Order::fromArray($row);
 
-        $itemRows = $this->db->table('shop_order_items')
-            ->where('order_id', $row['id'])
+        $itemRows = $this->db->table('shop_order_items oi')
+            ->select('oi.*, p.slug AS product_slug, (SELECT url FROM shop_product_images WHERE product_id = oi.product_id ORDER BY position ASC LIMIT 1) AS product_cover_image')
+            ->join('shop_products p', 'p.id = oi.product_id', 'left')
+            ->where('oi.order_id', $row['id'])
             ->get()->getResultArray();
 
         $order->items = array_map(
