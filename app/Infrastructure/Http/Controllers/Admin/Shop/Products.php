@@ -5,6 +5,7 @@ namespace App\Infrastructure\Http\Controllers\Admin\Shop;
 use App\Application\Shop\Commands\CreateProductCommand;
 use App\Application\Shop\Commands\DeleteProductCommand;
 use App\Application\Shop\Commands\UpdateProductCommand;
+use App\Application\Shop\Queries\GetProductQuery;
 use App\Application\Shop\Queries\ListProductsQuery;
 use App\Domain\Shop\Product;
 use App\Infrastructure\Http\Controllers\BaseController;
@@ -29,6 +30,17 @@ class Products extends BaseController
             'products'   => array_map([$this, 'formatProduct'], $result->items),
             'pagination' => $result->meta(),
         ]);
+    }
+
+    public function show(int $id): \CodeIgniter\HTTP\ResponseInterface
+    {
+        $product = service('getProductHandler')->handle(new GetProductQuery(id: $id));
+
+        if (!$product) {
+            return $this->notFound('Product not found.');
+        }
+
+        return $this->ok(['product' => $this->formatProductFull($product)]);
     }
 
     public function create(): \CodeIgniter\HTTP\ResponseInterface

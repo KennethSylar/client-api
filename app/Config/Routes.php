@@ -66,6 +66,7 @@ $routes->get( 'shop/account/orders',     '\App\Infrastructure\Http\Controllers\S
 // ----------------------------------------------------------------
 $routes->get(   'admin/shop/products',               '\App\Infrastructure\Http\Controllers\Admin\Shop\Products::index',       ['filter' => 'adminauth']);
 $routes->post(  'admin/shop/products',               '\App\Infrastructure\Http\Controllers\Admin\Shop\Products::create',      ['filter' => 'adminauth']);
+$routes->get(   'admin/shop/products/(:num)',         '\App\Infrastructure\Http\Controllers\Admin\Shop\Products::show/$1',     ['filter' => 'adminauth']);
 $routes->put(   'admin/shop/products/(:num)',         '\App\Infrastructure\Http\Controllers\Admin\Shop\Products::update/$1',   ['filter' => 'adminauth']);
 $routes->delete('admin/shop/products/(:num)',         '\App\Infrastructure\Http\Controllers\Admin\Shop\Products::delete/$1',   ['filter' => 'adminauth']);
 
