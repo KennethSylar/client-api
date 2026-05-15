@@ -62,10 +62,8 @@ class PaymentNotify extends BaseController
 
     public function ozow(): \CodeIgniter\HTTP\ResponseInterface
     {
-        $body = $this->jsonBody();
-        if (empty($body)) {
-            $body = $this->request->getPost();
-        }
+        // Ozow sends form-encoded (application/x-www-form-urlencoded)
+        $body = $this->request->getPost();
 
         if (empty($body['TransactionReference']) || empty($body['Status'])) {
             return $this->response->setStatusCode(400)->setBody('Bad Request');
@@ -86,6 +84,13 @@ class PaymentNotify extends BaseController
         $order = service('getOrderHandler')->handle(new GetOrderQuery(id: $orderId));
         if (!$order) {
             return $this->response->setStatusCode(404)->setBody('Order not found');
+        }
+
+        $expectedRand = $order->total->amountCents / 100;
+        $receivedRand = (float) ($body['Amount'] ?? 0);
+        if (abs($expectedRand - $receivedRand) > 0.05) {
+            log_message('error', "Ozow amount mismatch: expected {$expectedRand}, got {$receivedRand}");
+            return $this->response->setStatusCode(400)->setBody('Amount mismatch');
         }
 
         $status = strtolower($body['Status'] ?? '');
