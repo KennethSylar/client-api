@@ -2,12 +2,8 @@
 
 namespace App\Controllers;
 
-/**
- * Contact
- *
- * Handles the public contact form submission via Resend.
- * Route: POST /contact
- */
+use App\Application\Core\Commands\SendContactEnquiryCommand;
+
 class Contact extends BaseController
 {
     public function send(): \CodeIgniter\HTTP\ResponseInterface
@@ -28,238 +24,19 @@ class Contact extends BaseController
             return $this->error('Invalid email address.', 400);
         }
 
-        $apiKey  = getenv('RESEND_API_KEY');
-        $from    = getenv('RESEND_FROM') ?: 'noreply@contact.clientdomain.com';
-        $toEmail = getenv('app.contactToEmail') ?: 'hello@clientdomain.com';
-
-        if (empty($apiKey)) {
-            log_message('error', 'Contact form: RESEND_API_KEY not set in .env');
-            return $this->error('Email delivery is not configured on this server.', 503);
-        }
-
         try {
-            $resend = \Resend::client($apiKey);
-
-            $resend->emails->send([
-                'from'     => 'Website Contact Form <' . $from . '>',
-                'to'       => [$toEmail],
-                'reply_to' => $email,
-                'subject'  => 'Enquiry: ' . ($service ?: 'General') . ' — ' . $name,
-                'html'     => $this->buildHtml($name, $email, $phone, $service, $message),
-            ]);
-
-            return $this->ok();
-
+            service('sendContactEnquiryHandler')->handle(new SendContactEnquiryCommand(
+                name:    $name,
+                email:   $email,
+                phone:   $phone,
+                service: $service,
+                message: $message,
+            ));
         } catch (\Exception $e) {
-            log_message('error', 'Contact form Resend error: ' . $e->getMessage());
+            log_message('error', 'Contact enquiry failed: ' . $e->getMessage());
             return $this->error('Failed to send message. Please try again later.', 500);
         }
-    }
 
-    // ----------------------------------------------------------------
-    // Helpers
-    // ----------------------------------------------------------------
-
-    private function e(string $s): string
-    {
-        return htmlspecialchars($s, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-    }
-
-    private function eNl(string $s): string
-    {
-        return nl2br($this->e($s));
-    }
-
-    // ----------------------------------------------------------------
-    // HTML email template
-    // ----------------------------------------------------------------
-
-    private function buildHtml(
-        string $name,
-        string $email,
-        string $phone,
-        string $service,
-        string $message
-    ): string {
-        $year        = date('Y');
-        $submittedAt = date('l, d F Y \a\t H:i');
-
-        $phoneTd = $phone
-            ? '<a href="tel:' . $this->e(preg_replace('/\s+/', '', $phone)) . '" style="color:#2563eb;text-decoration:none;">' . $this->e($phone) . '</a>'
-            : '<span style="color:#9ca3af;">Not provided</span>';
-
-        $serviceBadge = $service
-            ? '<span style="display:inline-block;background-color:#dbeafe;color:#1e40af;font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;">' . $this->e($service) . '</span>'
-            : '<span style="color:#9ca3af;">Not specified</span>';
-
-        $replySubject = rawurlencode('Re: Your Enquiry');
-        $serviceLabel = $this->e($service ?: 'General');
-        $eName        = $this->e($name);
-        $eEmail       = $this->e($email);
-        $eMessage     = $this->eNl($message);
-
-        return <<<HTML
-<!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="x-apple-disable-message-reformatting">
-  <!--[if !mso]><!-->
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <!--<![endif]-->
-  <title>New Website Enquiry</title>
-  <!--[if mso]>
-  <noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
-  <![endif]-->
-  <style>
-    body,table,td,a{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}
-    table,td{mso-table-lspace:0pt;mso-table-rspace:0pt}
-    img{-ms-interpolation-mode:bicubic;border:0;height:auto;line-height:100%;outline:none;text-decoration:none}
-    body{margin:0!important;padding:0!important;background-color:#f4f4f5}
-    a[x-apple-data-detectors]{color:inherit!important;text-decoration:none!important}
-  </style>
-</head>
-<body style="margin:0;padding:0;background-color:#f4f4f5;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-
-<!--[if mso|IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#f4f4f5;"><tr><td><![endif]-->
-
-<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#f4f4f5;margin:0;padding:0;">
-  <tr>
-    <td align="center" style="padding:32px 16px;">
-
-      <!-- Card -->
-      <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="600"
-        style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-
-        <!-- Header -->
-        <tr>
-          <td style="background-color:#1e3a5f;padding:28px 36px;">
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-              <tr>
-                <td>
-                  <p style="margin:0;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#93c5fd;">
-                    Website Contact Form
-                  </p>
-                  <h1 style="margin:6px 0 0;font-size:22px;font-weight:700;color:#ffffff;line-height:1.3;">
-                    New Website Enquiry
-                  </h1>
-                </td>
-                <td align="right" valign="middle">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                    <tr>
-                      <td style="background-color:rgba(255,255,255,0.15);border-radius:8px;padding:8px 14px;">
-                        <p style="margin:0;font-size:11px;color:#bfdbfe;font-weight:600;">$serviceLabel</p>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-
-        <!-- Body -->
-        <tr>
-          <td style="padding:32px 36px 8px;">
-
-            <!-- Details grid -->
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
-              style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:24px;">
-              <tr style="background-color:#f9fafb;">
-                <td width="120" style="padding:12px 16px;font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#6b7280;border-bottom:1px solid #e5e7eb;white-space:nowrap;">Full Name</td>
-                <td style="padding:12px 16px;font-size:14px;font-weight:600;color:#111827;border-bottom:1px solid #e5e7eb;">$eName</td>
-              </tr>
-              <tr>
-                <td width="120" style="padding:12px 16px;font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#6b7280;border-bottom:1px solid #e5e7eb;white-space:nowrap;background-color:#f9fafb;">Email</td>
-                <td style="padding:12px 16px;font-size:14px;color:#111827;border-bottom:1px solid #e5e7eb;">
-                  <a href="mailto:$eEmail" style="color:#2563eb;text-decoration:none;font-weight:500;">$eEmail</a>
-                </td>
-              </tr>
-              <tr style="background-color:#f9fafb;">
-                <td width="120" style="padding:12px 16px;font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#6b7280;border-bottom:1px solid #e5e7eb;white-space:nowrap;">Phone</td>
-                <td style="padding:12px 16px;font-size:14px;color:#111827;border-bottom:1px solid #e5e7eb;">$phoneTd</td>
-              </tr>
-              <tr>
-                <td width="120" style="padding:12px 16px;font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#6b7280;white-space:nowrap;background-color:#f9fafb;">Service</td>
-                <td style="padding:12px 16px;font-size:14px;color:#111827;">$serviceBadge</td>
-              </tr>
-            </table>
-
-            <!-- Message -->
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:28px;">
-              <tr>
-                <td style="padding-bottom:8px;">
-                  <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#6b7280;">Message</p>
-                </td>
-              </tr>
-              <tr>
-                <td style="background-color:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px 18px;">
-                  <p style="margin:0;font-size:14px;color:#374151;line-height:1.7;">$eMessage</p>
-                </td>
-              </tr>
-            </table>
-
-            <!-- Reply button -->
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:32px;">
-              <tr>
-                <td align="center">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                    <tr>
-                      <td style="border-radius:8px;background-color:#1e3a5f;">
-                        <a href="mailto:$eEmail?subject=$replySubject"
-                          style="display:inline-block;padding:12px 28px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:8px;">
-                          &#9993;&nbsp; Reply to $eName
-                        </a>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-
-          </td>
-        </tr>
-
-        <!-- Footer -->
-        <tr>
-          <td style="background-color:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 36px;">
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-              <tr>
-                <td>
-                  <p style="margin:0;font-size:11px;color:#9ca3af;line-height:1.6;">
-                    Submitted via website contact form &bull; $submittedAt
-                  </p>
-                  <p style="margin:4px 0 0;font-size:11px;color:#9ca3af;">
-                    Reply directly to reach the enquirer.
-                  </p>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-
-      </table>
-      <!-- /Card -->
-
-      <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="600" style="max-width:600px;width:100%;">
-        <tr>
-          <td align="center" style="padding:16px 0 0;">
-            <p style="margin:0;font-size:11px;color:#9ca3af;">
-              &copy; $year All rights reserved.
-            </p>
-          </td>
-        </tr>
-      </table>
-
-    </td>
-  </tr>
-</table>
-
-<!--[if mso|IE]></td></tr></table><![endif]-->
-
-</body>
-</html>
-HTML;
+        return $this->ok();
     }
 }

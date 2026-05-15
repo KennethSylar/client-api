@@ -44,10 +44,10 @@ app/
 | M2 Infrastructure: Persistence | 9 | 9 | ✅ |
 | M3 Infrastructure: Services & Gateways | 6 | 6 | ✅ |
 | M4 Application: Commands | 13 | 13 | ✅ |
-| M5 Application: Queries | 7 | 0 | 🔲 |
-| M6 Thin Controllers | 16 | 0 | 🔲 |
+| M5 Application: Queries | 7 | 7 | ✅ |
+| M6 Thin Controllers | 16 | 16 | ✅ |
 | M7 Move Http Layer | 6 | 0 | 🔲 |
-| **Total** | **66** | **38** | 🔲 |
+| **Total** | **66** | **61** | 🔲 |
 
 ---
 
@@ -269,7 +269,7 @@ app/
 
 ## M5 — Application: Queries (Reads)
 
-- [ ] **5.1** — Core queries
+- [x] **5.1** — Core queries
   - `app/Application/Core/Queries/GetSettingsQuery.php`
   - `app/Application/Core/Queries/ListPagesQuery.php`
   - `app/Application/Core/Queries/GetPageQuery.php`
@@ -277,31 +277,31 @@ app/
   - `app/Application/Core/Handlers/ListPagesHandler.php`
   - `app/Application/Core/Handlers/GetPageHandler.php`
 
-- [ ] **5.2** — Category queries
+- [x] **5.2** — Category queries
   - `app/Application/Shop/Queries/ListCategoriesQuery.php`
   - `app/Application/Shop/Handlers/ListCategoriesHandler.php`
 
-- [ ] **5.3** — Product queries
+- [x] **5.3** — Product queries
   - `app/Application/Shop/Queries/ListProductsQuery.php`
   - `app/Application/Shop/Queries/GetProductQuery.php`
   - `app/Application/Shop/Handlers/ListProductsHandler.php`
   - `app/Application/Shop/Handlers/GetProductHandler.php`
 
-- [ ] **5.4** — Order queries
+- [x] **5.4** — Order queries
   - `app/Application/Orders/Queries/ListOrdersQuery.php`
   - `app/Application/Orders/Queries/GetOrderQuery.php`
   - `app/Application/Orders/Handlers/ListOrdersHandler.php`
   - `app/Application/Orders/Handlers/GetOrderHandler.php`
 
-- [ ] **5.5** — Stock history
+- [x] **5.5** — Stock history
   - `app/Application/Shop/Queries/GetStockHistoryQuery.php`
   - `app/Application/Shop/Handlers/GetStockHistoryHandler.php`
 
-- [ ] **5.6** — Customer queries
+- [x] **5.6** — Customer queries
   - `app/Application/Orders/Queries/GetCustomerOrdersQuery.php`
   - `app/Application/Orders/Handlers/GetCustomerOrdersHandler.php`
 
-- [ ] **5.7** — Invoice
+- [x] **5.7** — Invoice
   - `app/Application/Orders/Queries/GetOrderInvoiceQuery.php`
   - `app/Application/Orders/Handlers/GetOrderInvoiceHandler.php`
 
@@ -312,26 +312,25 @@ app/
 > Goal: every controller is an HTTP adapter only. No `\Config\Database::connect()`, no business logic.  
 > Pattern per controller: parse input → build Command/Query → call handler → map result → return response.
 
-- [ ] **6.1** — `app/Controllers/Admin/Auth.php`
-- [ ] **6.2** — `app/Controllers/Admin/Settings.php`
-- [ ] **6.3** — `app/Controllers/Admin/Pages.php` + `Content/Pages.php` + `Content/Settings.php`
-- [ ] **6.4** — `app/Controllers/Admin/Upload.php` + `Admin/UploadPdf.php`
-- [ ] **6.5** — `app/Controllers/Admin/Shop/Categories.php`
-- [ ] **6.6** — `app/Controllers/Admin/Shop/Products.php`
-- [ ] **6.7** — `app/Controllers/Admin/Shop/Images.php`
-- [ ] **6.8** — `app/Controllers/Admin/Shop/Stock.php` _(mark static `logAdjustment()` as `@deprecated`)_
-- [ ] **6.9** — `app/Controllers/Admin/Shop/Orders.php`
-- [ ] **6.10** — `app/Controllers/Shop/Categories.php` + `Shop/Products.php`
-- [ ] **6.11** — `app/Controllers/Shop/CustomerAuth.php`
-- [ ] **6.12** — `app/Controllers/Shop/Checkout.php` _(most complex: delegates gateway URL building to gateway ports)_
-- [ ] **6.13** — `app/Controllers/Shop/PaymentNotify.php`
-- [ ] **6.14** — `app/Controllers/Shop/Orders.php`
-- [ ] **6.15** — `app/Controllers/Contact.php`
-- [ ] **6.16** — Retire static service classes
-  - Verify zero callers: `grep -r "InvoicePdf\|OrderMailer\|LowStockMailer" app/Controllers app/Services`
-  - Delete `app/Services/InvoicePdf.php`
-  - Delete `app/Services/OrderMailer.php`
-  - Delete `app/Services/LowStockMailer.php`
+- [x] **6.1** — `app/Controllers/Admin/Auth.php`
+- [x] **6.2** — `app/Controllers/Admin/Settings.php`
+- [x] **6.3** — `app/Controllers/Admin/Pages.php` + `Content/Pages.php` + `Content/Settings.php`
+- [x] **6.4** — `app/Controllers/Admin/Upload.php` + `Admin/UploadPdf.php`
+- [x] **6.5** — `app/Controllers/Admin/Shop/Categories.php`
+- [x] **6.6** — `app/Controllers/Admin/Shop/Products.php`
+- [x] **6.7** — `app/Controllers/Admin/Shop/Images.php`
+- [x] **6.8** — `app/Controllers/Admin/Shop/Stock.php` _(static `logAdjustment()` marked `@deprecated`)_
+- [x] **6.9** — `app/Controllers/Admin/Shop/Orders.php`
+- [x] **6.10** — `app/Controllers/Shop/Categories.php` + `Shop/Products.php`
+- [x] **6.11** — `app/Controllers/Shop/CustomerAuth.php`
+- [x] **6.12** — `app/Controllers/Shop/Checkout.php` _(delegates gateway URL building to gateway ports)_
+- [x] **6.13** — `app/Controllers/Shop/PaymentNotify.php`
+- [x] **6.14** — `app/Controllers/Shop/Orders.php`
+- [x] **6.15** — `app/Controllers/Contact.php`
+- [x] **6.16** — Retire static service classes
+  - Deleted `app/Services/InvoicePdf.php`
+  - Deleted `app/Services/OrderMailer.php`
+  - Deleted `app/Services/LowStockMailer.php`
 
 ---
 

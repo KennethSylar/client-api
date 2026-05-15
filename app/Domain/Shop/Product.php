@@ -26,6 +26,7 @@ final class Product
         public readonly ?string $categoryName   = null,
         public readonly ?string $categorySlug   = null,
         public readonly ?\DateTimeImmutable $lowStockAlertedAt = null,
+        public readonly ?string $coverImage     = null,
     ) {}
 
     public static function fromArray(array $row): self
@@ -50,6 +51,7 @@ final class Product
             lowStockAlertedAt: isset($row['low_stock_alerted_at'])
                 ? new \DateTimeImmutable($row['low_stock_alerted_at'])
                 : null,
+            coverImage:        $row['cover_image'] ?? null,
         );
     }
 

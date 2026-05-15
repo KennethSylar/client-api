@@ -16,6 +16,27 @@ class MySqlCategoryRepository extends AbstractMysqlRepository implements Categor
         return array_map(fn($r) => Category::fromArray($r), $rows);
     }
 
+    public function findAllWithProductCount(): array
+    {
+        $rows = $this->db->query("
+            SELECT c.id, c.slug, c.name, c.parent_id, c.position,
+                   COUNT(p.id) AS product_count
+            FROM shop_categories c
+            LEFT JOIN shop_products p ON p.category_id = c.id AND p.active = 1
+            GROUP BY c.id
+            ORDER BY c.position ASC, c.name ASC
+        ")->getResultArray();
+
+        foreach ($rows as &$row) {
+            $row['id']            = (int) $row['id'];
+            $row['parent_id']     = $row['parent_id'] !== null ? (int) $row['parent_id'] : null;
+            $row['position']      = (int) $row['position'];
+            $row['product_count'] = (int) $row['product_count'];
+        }
+
+        return $rows;
+    }
+
     public function findById(int $id): ?Category
     {
         $row = $this->db->table('shop_categories')->where('id', $id)->get()->getRowArray();

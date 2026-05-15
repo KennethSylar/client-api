@@ -7,6 +7,12 @@ interface CategoryRepositoryInterface
     /** @return Category[] */
     public function findAll(): array;
 
+    /**
+     * Returns all categories with active product counts (for public shop listing).
+     * @return array[] Each row: {id, parent_id, slug, name, position, product_count}
+     */
+    public function findAllWithProductCount(): array;
+
     public function findById(int $id): ?Category;
 
     public function save(Category $category): Category;

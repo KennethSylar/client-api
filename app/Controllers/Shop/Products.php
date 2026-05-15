@@ -2,65 +2,45 @@
 
 namespace App\Controllers\Shop;
 
+use App\Application\Shop\Queries\GetProductQuery;
+use App\Application\Shop\Queries\ListProductsQuery;
 use App\Controllers\BaseController;
+use App\Domain\Shop\Product;
 
-/**
- * Shop\Products  (public)
- *
- * GET /shop/products              — paginated list, filter by category slug, search by name
- * GET /shop/products/:slug        — single product with images and variants
- */
 class Products extends BaseController
 {
     public function index(): \CodeIgniter\HTTP\ResponseInterface
     {
         if ($off = $this->shopOffline()) return $off;
 
-        $db = \Config\Database::connect();
+        $page    = max(1, (int) ($this->request->getGet('page')     ?? 1));
+        $perPage = min(96, max(1, (int) ($this->request->getGet('per_page') ?? 24)));
+        $search  = trim($this->request->getGet('search') ?? '');
+        $catSlug = trim($this->request->getGet('category') ?? '');
 
-        $page     = max(1, (int) ($this->request->getGet('page') ?? 1));
-        $perPage  = min(96, max(1, (int) ($this->request->getGet('per_page') ?? 24)));
-        $offset   = ($page - 1) * $perPage;
-        $search   = trim($this->request->getGet('search') ?? '');
-        $catSlug  = trim($this->request->getGet('category') ?? '');
-
-        $builder = $db->table('shop_products p')
-            ->select('
-                p.id, p.slug, p.name, p.price, p.vat_exempt,
-                p.track_stock, p.stock_qty, p.low_stock_threshold,
-                p.category_id, c.name AS category_name, c.slug AS category_slug,
-                (SELECT url FROM shop_product_images
-                 WHERE product_id = p.id ORDER BY position ASC LIMIT 1) AS cover_image
-            ')
-            ->join('shop_categories c', 'c.id = p.category_id', 'left')
-            ->where('p.active', 1);
-
-        if ($search !== '') {
-            $builder->groupStart()
-                ->like('p.name', $search)
-                ->orLike('p.description', $search)
-                ->groupEnd();
-        }
-
+        // Resolve category slug → id if provided
+        $categoryId = null;
         if ($catSlug !== '') {
-            $builder->where('c.slug', $catSlug);
+            $cat = service('categoryRepository')->findAll();
+            foreach ($cat as $c) {
+                if ($c->slug === $catSlug) {
+                    $categoryId = $c->id;
+                    break;
+                }
+            }
         }
 
-        $total   = $builder->countAllResults(reset: false);
-        $rows    = $builder->orderBy('p.name', 'ASC')->limit($perPage, $offset)->get()->getResultArray();
-
-        foreach ($rows as &$row) {
-            $row = $this->castProduct($row);
-        }
+        $result = service('listProductsHandler')->handle(new ListProductsQuery(
+            page:       $page,
+            perPage:    $perPage,
+            search:     $search,
+            categoryId: $categoryId,
+            activeOnly: true,
+        ));
 
         return $this->ok([
-            'products'   => $rows,
-            'pagination' => [
-                'total'    => $total,
-                'page'     => $page,
-                'per_page' => $perPage,
-                'pages'    => (int) ceil($total / $perPage),
-            ],
+            'products'   => array_map([$this, 'formatProduct'], $result->items),
+            'pagination' => $result->meta(),
         ]);
     }
 
@@ -68,90 +48,57 @@ class Products extends BaseController
     {
         if ($off = $this->shopOffline()) return $off;
 
-        $db  = \Config\Database::connect();
-        $row = $db->table('shop_products p')
-            ->select('
-                p.id, p.slug, p.name, p.description, p.price, p.vat_exempt,
-                p.track_stock, p.stock_qty, p.low_stock_threshold,
-                p.category_id, c.name AS category_name, c.slug AS category_slug,
-                p.landing_content, p.active
-            ')
-            ->join('shop_categories c', 'c.id = p.category_id', 'left')
-            ->where('p.slug', $slug)
-            ->where('p.active', 1)
-            ->get()->getRowArray();
+        $product = service('getProductHandler')->handle(new GetProductQuery(slug: $slug));
 
-        if (!$row) {
+        if ($product === null || !$product->active) {
             return $this->notFound('Product not found.');
         }
 
-        $row    = $this->castProduct($row);
-        $row['images']   = $this->getImages($db, $row['id']);
-        $row['variants'] = $this->getVariants($db, $row['id']);
-
-        return $this->ok(['product' => $row]);
+        return $this->ok(['product' => $this->formatProductFull($product)]);
     }
 
-    // ----------------------------------------------------------------
-    // Shared helpers
-    // ----------------------------------------------------------------
+    // ── Helpers ───────────────────────────────────────────────────────
 
-    private function castProduct(array $row): array
+    private function formatProduct(Product $p): array
     {
-        $row['id']                  = (int)  $row['id'];
-        $row['price']               = (float) $row['price'];
-        $row['vat_exempt']          = (bool) $row['vat_exempt'];
-        $row['track_stock']         = (bool) $row['track_stock'];
-        $row['stock_qty']           = (int)  $row['stock_qty'];
-        $row['low_stock_threshold'] = (int)  $row['low_stock_threshold'];
-        $row['in_stock']            = !$row['track_stock'] || $row['stock_qty'] > 0;
-        $row['low_stock']           = $row['track_stock']
-                                      && $row['stock_qty'] > 0
-                                      && $row['stock_qty'] <= $row['low_stock_threshold'];
-
-        if (isset($row['category_id'])) {
-            $row['category_id'] = $row['category_id'] !== null ? (int) $row['category_id'] : null;
-        }
-        if (isset($row['landing_content'])) {
-            $row['landing_content'] = $row['landing_content']
-                ? json_decode($row['landing_content'], true)
-                : null;
-        }
-        if (isset($row['active'])) {
-            $row['active'] = (bool) $row['active'];
-        }
-        return $row;
+        return [
+            'id'                  => $p->id,
+            'slug'                => $p->slug,
+            'name'                => $p->name,
+            'price'               => $p->price,
+            'vat_exempt'          => $p->vatExempt,
+            'track_stock'         => $p->trackStock,
+            'stock_qty'           => $p->stockQty,
+            'low_stock_threshold' => $p->lowStockThreshold,
+            'category_id'         => $p->categoryId,
+            'category_name'       => $p->categoryName,
+            'category_slug'       => $p->categorySlug,
+            'in_stock'            => $p->inStock(),
+            'low_stock'           => $p->isLowStock(),
+            'cover_image'         => $p->coverImage,
+        ];
     }
 
-    private function getImages(\CodeIgniter\Database\BaseConnection $db, int $productId): array
+    private function formatProductFull(Product $p): array
     {
-        $rows = $db->table('shop_product_images')
-            ->where('product_id', $productId)
-            ->orderBy('position', 'ASC')
-            ->get()->getResultArray();
-
-        return array_map(fn($r) => [
-            'id'       => (int) $r['id'],
-            'url'      => $r['url'],
-            'alt'      => $r['alt'],
-            'position' => (int) $r['position'],
-        ], $rows);
-    }
-
-    private function getVariants(\CodeIgniter\Database\BaseConnection $db, int $productId): array
-    {
-        $rows = $db->table('shop_product_variants')
-            ->where('product_id', $productId)
-            ->orderBy('position', 'ASC')
-            ->get()->getResultArray();
-
-        return array_map(fn($r) => [
-            'id'               => (int)   $r['id'],
-            'name'             => $r['name'],
-            'price_adjustment' => (float) $r['price_adjustment'],
-            'track_stock'      => (bool)  $r['track_stock'],
-            'stock_qty'        => (int)   $r['stock_qty'],
-            'in_stock'         => !(bool) $r['track_stock'] || (int) $r['stock_qty'] > 0,
-        ], $rows);
+        return array_merge($this->formatProduct($p), [
+            'description'     => $p->description,
+            'landing_content' => $p->landingContent,
+            'active'          => $p->active,
+            'images'          => array_map(fn($i) => [
+                'id'       => $i->id,
+                'url'      => $i->url,
+                'alt'      => $i->alt,
+                'position' => $i->position,
+            ], $p->images),
+            'variants'        => array_map(fn($v) => [
+                'id'               => $v->id,
+                'name'             => $v->name,
+                'price_adjustment' => $v->priceAdjustment,
+                'track_stock'      => $v->trackStock,
+                'stock_qty'        => $v->stockQty,
+                'in_stock'         => $v->inStock(),
+            ], $p->variants),
+        ]);
     }
 }

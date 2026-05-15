@@ -309,4 +309,81 @@ class Services extends BaseService
             static::settingsRepository(),
         );
     }
+
+    // -------------------------------------------------------------------------
+    // Query Handlers  (M5)
+    // -------------------------------------------------------------------------
+
+    public static function getSettingsHandler(bool $getShared = true): \App\Application\Core\Handlers\GetSettingsHandler
+    {
+        if ($getShared) return static::getSharedInstance('getSettingsHandler');
+        return new \App\Application\Core\Handlers\GetSettingsHandler(static::settingsRepository());
+    }
+
+    public static function listPagesHandler(bool $getShared = true): \App\Application\Core\Handlers\ListPagesHandler
+    {
+        if ($getShared) return static::getSharedInstance('listPagesHandler');
+        return new \App\Application\Core\Handlers\ListPagesHandler(static::pageRepository());
+    }
+
+    public static function getPageHandler(bool $getShared = true): \App\Application\Core\Handlers\GetPageHandler
+    {
+        if ($getShared) return static::getSharedInstance('getPageHandler');
+        return new \App\Application\Core\Handlers\GetPageHandler(static::pageRepository());
+    }
+
+    public static function listCategoriesHandler(bool $getShared = true): \App\Application\Shop\Handlers\ListCategoriesHandler
+    {
+        if ($getShared) return static::getSharedInstance('listCategoriesHandler');
+        return new \App\Application\Shop\Handlers\ListCategoriesHandler(static::categoryRepository());
+    }
+
+    public static function listProductsHandler(bool $getShared = true): \App\Application\Shop\Handlers\ListProductsHandler
+    {
+        if ($getShared) return static::getSharedInstance('listProductsHandler');
+        return new \App\Application\Shop\Handlers\ListProductsHandler(static::productRepository());
+    }
+
+    public static function getProductHandler(bool $getShared = true): \App\Application\Shop\Handlers\GetProductHandler
+    {
+        if ($getShared) return static::getSharedInstance('getProductHandler');
+        return new \App\Application\Shop\Handlers\GetProductHandler(static::productRepository());
+    }
+
+    public static function listOrdersHandler(bool $getShared = true): \App\Application\Orders\Handlers\ListOrdersHandler
+    {
+        if ($getShared) return static::getSharedInstance('listOrdersHandler');
+        return new \App\Application\Orders\Handlers\ListOrdersHandler(static::orderRepository());
+    }
+
+    public static function getOrderHandler(bool $getShared = true): \App\Application\Orders\Handlers\GetOrderHandler
+    {
+        if ($getShared) return static::getSharedInstance('getOrderHandler');
+        return new \App\Application\Orders\Handlers\GetOrderHandler(static::orderRepository());
+    }
+
+    public static function getStockHistoryHandler(bool $getShared = true): \App\Application\Shop\Handlers\GetStockHistoryHandler
+    {
+        if ($getShared) return static::getSharedInstance('getStockHistoryHandler');
+        return new \App\Application\Shop\Handlers\GetStockHistoryHandler(
+            static::productRepository(),
+            static::stockRepository(),
+        );
+    }
+
+    public static function getCustomerOrdersHandler(bool $getShared = true): \App\Application\Orders\Handlers\GetCustomerOrdersHandler
+    {
+        if ($getShared) return static::getSharedInstance('getCustomerOrdersHandler');
+        return new \App\Application\Orders\Handlers\GetCustomerOrdersHandler(static::orderRepository());
+    }
+
+    public static function getOrderInvoiceHandler(bool $getShared = true): \App\Application\Orders\Handlers\GetOrderInvoiceHandler
+    {
+        if ($getShared) return static::getSharedInstance('getOrderInvoiceHandler');
+        return new \App\Application\Orders\Handlers\GetOrderInvoiceHandler(
+            static::orderRepository(),
+            static::settingsRepository(),
+            static::invoicePdf(),
+        );
+    }
 }
