@@ -72,6 +72,12 @@ class Services extends BaseService
         return new \App\Infrastructure\Persistence\MySqlCustomerRepository();
     }
 
+    public static function reviewRepository(bool $getShared = true): \App\Domain\Shop\ReviewRepositoryInterface
+    {
+        if ($getShared) return static::getSharedInstance('reviewRepository');
+        return new \App\Infrastructure\Persistence\MySqlReviewRepository();
+    }
+
     // -------------------------------------------------------------------------
     // External service ports  (implementations added in M3)
     // -------------------------------------------------------------------------
@@ -221,6 +227,37 @@ class Services extends BaseService
     {
         if ($getShared) return static::getSharedInstance('updateOrderStatusHandler');
         return new \App\Application\Orders\Handlers\UpdateOrderStatusHandler(static::orderRepository());
+    }
+
+    public static function submitReviewHandler(bool $getShared = true): \App\Application\Shop\Handlers\SubmitReviewHandler
+    {
+        if ($getShared) return static::getSharedInstance('submitReviewHandler');
+        return new \App\Application\Shop\Handlers\SubmitReviewHandler(
+            static::reviewRepository(),
+            static::productRepository(),
+        );
+    }
+
+    public static function moderateReviewHandler(bool $getShared = true): \App\Application\Shop\Handlers\ModerateReviewHandler
+    {
+        if ($getShared) return static::getSharedInstance('moderateReviewHandler');
+        return new \App\Application\Shop\Handlers\ModerateReviewHandler(static::reviewRepository());
+    }
+
+    public static function listReviewsHandler(bool $getShared = true): \App\Application\Shop\Handlers\ListReviewsHandler
+    {
+        if ($getShared) return static::getSharedInstance('listReviewsHandler');
+        return new \App\Application\Shop\Handlers\ListReviewsHandler(static::reviewRepository());
+    }
+
+    public static function partialRefundHandler(bool $getShared = true): \App\Application\Orders\Handlers\PartialRefundHandler
+    {
+        if ($getShared) return static::getSharedInstance('partialRefundHandler');
+        return new \App\Application\Orders\Handlers\PartialRefundHandler(
+            static::orderRepository(),
+            static::productRepository(),
+            static::stockRepository(),
+        );
     }
 
     public static function refundOrderHandler(bool $getShared = true): \App\Application\Orders\Handlers\RefundOrderHandler

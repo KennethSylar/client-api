@@ -38,29 +38,31 @@ final class RefundOrderHandler
             createdAt:  new \DateTimeImmutable(),
         ));
 
-        // Restore stock for each item
+        // Restore stock for each item — subtract qty already restored by prior partial refunds
         foreach ($order->items as $item) {
+            $alreadyRefunded = $order->refundedQtyForItem($item->id);
+            $restoreQty      = $item->qty - $alreadyRefunded;
+            if ($restoreQty <= 0) continue;
+
             if ($item->variantId !== null) {
                 $variant = $this->products->findVariantById($item->variantId, $item->productId ?? 0);
                 if ($variant === null || !$variant->trackStock) continue;
 
                 $qtyBefore = $variant->stockQty;
-                $qtyAfter  = $qtyBefore + $item->qty;
-                $this->stock->incrementVariant($item->variantId, $item->qty);
+                $this->stock->incrementVariant($item->variantId, $restoreQty);
                 $this->stock->logAdjustment(
-                    $item->productId, $item->variantId, $item->qty,
-                    'refund', $cmd->orderId, '', $qtyBefore, $qtyAfter,
+                    $item->productId, $item->variantId, $restoreQty,
+                    'refund', $cmd->orderId, '', $qtyBefore, $qtyBefore + $restoreQty,
                 );
             } elseif ($item->productId !== null) {
                 $product = $this->products->findById($item->productId);
                 if ($product === null || !$product->trackStock) continue;
 
                 $qtyBefore = $product->stockQty;
-                $qtyAfter  = $qtyBefore + $item->qty;
-                $this->stock->incrementProduct($item->productId, $item->qty);
+                $this->stock->incrementProduct($item->productId, $restoreQty);
                 $this->stock->logAdjustment(
-                    $item->productId, null, $item->qty,
-                    'refund', $cmd->orderId, '', $qtyBefore, $qtyAfter,
+                    $item->productId, null, $restoreQty,
+                    'refund', $cmd->orderId, '', $qtyBefore, $qtyBefore + $restoreQty,
                 );
             }
         }

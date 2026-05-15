@@ -24,4 +24,9 @@ interface OrderRepositoryInterface
     public function updateStatus(int $id, OrderStatus $status, array $extra = []): void;
 
     public function appendStatusLog(OrderStatusLogEntry $entry): void;
+
+    public function saveRefund(OrderRefund $refund): OrderRefund;
+
+    /** @return OrderRefund[] */
+    public function findRefundsByOrder(int $orderId): array;
 }

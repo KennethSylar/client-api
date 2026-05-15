@@ -14,6 +14,9 @@ final class Order
     /** @var OrderStatusLogEntry[] */
     public array $statusLog = [];
 
+    /** @var OrderRefund[] */
+    public array $refunds = [];
+
     public function __construct(
         public readonly int            $id,
         public readonly string         $token,
@@ -78,6 +81,20 @@ final class Order
     public function fullName(): string
     {
         return trim("{$this->firstName} {$this->lastName}");
+    }
+
+    /** Returns total qty already refunded for a given order item across all partial refunds. */
+    public function refundedQtyForItem(int $orderItemId): int
+    {
+        $total = 0;
+        foreach ($this->refunds as $refund) {
+            foreach ($refund->items as $item) {
+                if ($item->orderItemId === $orderItemId) {
+                    $total += $item->qty;
+                }
+            }
+        }
+        return $total;
     }
 
     public function isPaid(): bool

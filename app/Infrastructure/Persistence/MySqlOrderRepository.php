@@ -5,6 +5,8 @@ namespace App\Infrastructure\Persistence;
 use App\Domain\Orders\Order;
 use App\Domain\Orders\OrderFilter;
 use App\Domain\Orders\OrderItem;
+use App\Domain\Orders\OrderRefund;
+use App\Domain\Orders\OrderRefundItem;
 use App\Domain\Orders\OrderRepositoryInterface;
 use App\Domain\Orders\OrderStatus;
 use App\Domain\Orders\OrderStatusLogEntry;
@@ -157,6 +159,47 @@ class MySqlOrderRepository extends AbstractMysqlRepository implements OrderRepos
         ]);
     }
 
+    public function saveRefund(OrderRefund $refund): OrderRefund
+    {
+        $this->db->transStart();
+
+        $this->db->table('shop_order_refunds')->insert([
+            'order_id'     => $refund->orderId,
+            'amount_cents' => $refund->amountCents,
+            'note'         => $refund->note,
+            'created_at'   => $this->now(),
+        ]);
+
+        $refundId = (int) $this->db->insertID();
+
+        foreach ($refund->items as $item) {
+            $this->db->table('shop_order_refund_items')->insert([
+                'refund_id'     => $refundId,
+                'order_item_id' => $item->orderItemId,
+                'qty'           => $item->qty,
+            ]);
+        }
+
+        $this->db->transComplete();
+
+        if (!$this->db->transStatus()) {
+            throw new \RuntimeException('Failed to save refund — transaction rolled back.');
+        }
+
+        return $this->findRefund($refundId);
+    }
+
+    /** @return OrderRefund[] */
+    public function findRefundsByOrder(int $orderId): array
+    {
+        $rows = $this->db->table('shop_order_refunds')
+            ->where('order_id', $orderId)
+            ->orderBy('created_at', 'ASC')
+            ->get()->getResultArray();
+
+        return array_map(fn($r) => $this->hydrateRefund($r), $rows);
+    }
+
     // ── Hydration ─────────────────────────────────────────────────────
 
     private function hydrate(array $row): Order
@@ -183,6 +226,29 @@ class MySqlOrderRepository extends AbstractMysqlRepository implements OrderRepos
             $logRows
         );
 
+        $order->refunds = $this->findRefundsByOrder($row['id']);
+
         return $order;
+    }
+
+    private function findRefund(int $refundId): OrderRefund
+    {
+        $row = $this->db->table('shop_order_refunds')->where('id', $refundId)->get()->getRowArray();
+        return $this->hydrateRefund($row);
+    }
+
+    private function hydrateRefund(array $row): OrderRefund
+    {
+        $refund = OrderRefund::fromArray($row);
+
+        $itemRows = $this->db->table('shop_order_refund_items ri')
+            ->select('ri.*, oi.product_name, oi.variant_name')
+            ->join('shop_order_items oi', 'oi.id = ri.order_item_id', 'left')
+            ->where('ri.refund_id', $row['id'])
+            ->get()->getResultArray();
+
+        $refund->items = array_map(fn($i) => OrderRefundItem::fromArray($i), $itemRows);
+
+        return $refund;
     }
 }

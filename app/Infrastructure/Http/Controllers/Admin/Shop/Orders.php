@@ -2,12 +2,14 @@
 
 namespace App\Infrastructure\Http\Controllers\Admin\Shop;
 
+use App\Application\Orders\Commands\PartialRefundCommand;
 use App\Application\Orders\Commands\RefundOrderCommand;
 use App\Application\Orders\Commands\UpdateOrderStatusCommand;
 use App\Application\Orders\Queries\GetOrderInvoiceQuery;
 use App\Application\Orders\Queries\GetOrderQuery;
 use App\Application\Orders\Queries\ListOrdersQuery;
 use App\Domain\Orders\Order;
+use App\Domain\Orders\RefundableItem;
 use App\Infrastructure\Http\Controllers\BaseController;
 
 class Orders extends BaseController
@@ -43,6 +45,7 @@ class Orders extends BaseController
         return $this->ok(array_merge($this->formatOrder($order), [
             'items'      => array_map(fn($i) => $i->toArray(), $order->items),
             'status_log' => array_map(fn($l) => $l->toArray(), $order->statusLog),
+            'refunds'    => array_map(fn($r) => $r->toArray(), $order->refunds),
         ]));
     }
 
@@ -81,6 +84,34 @@ class Orders extends BaseController
         }
 
         return $this->ok(['status' => 'refunded']);
+    }
+
+    public function partialRefund(int $id): \CodeIgniter\HTTP\ResponseInterface
+    {
+        $body        = $this->jsonBody();
+        $amountCents = (int) round((float) ($body['amount'] ?? 0) * 100);
+        $rawItems    = $body['items'] ?? [];
+        $note        = trim($body['note'] ?? '');
+
+        $items = array_map(
+            fn($i) => new RefundableItem((int) ($i['order_item_id'] ?? 0), (int) ($i['qty'] ?? 0)),
+            array_filter($rawItems, fn($i) => !empty($i['order_item_id']) && !empty($i['qty']))
+        );
+
+        try {
+            service('partialRefundHandler')->handle(new PartialRefundCommand(
+                orderId:     $id,
+                amountCents: $amountCents,
+                items:       array_values($items),
+                note:        $note,
+            ));
+        } catch (\DomainException $e) {
+            return $this->notFound($e->getMessage());
+        } catch (\InvalidArgumentException $e) {
+            return $this->error($e->getMessage(), 400);
+        }
+
+        return $this->ok(['status' => 'partial_refund_recorded']);
     }
 
     public function invoice(int $id): \CodeIgniter\HTTP\ResponseInterface

@@ -87,6 +87,18 @@ $routes->patch( 'admin/shop/orders/(:num)/status',             '\App\Infrastruct
 $routes->post(  'admin/shop/orders/(:num)/refund',             '\App\Infrastructure\Http\Controllers\Admin\Shop\Orders::refund/$1',     ['filter' => 'adminauth']);
 $routes->get(   'admin/shop/orders/(:num)/invoice',            '\App\Infrastructure\Http\Controllers\Admin\Shop\Orders::invoice/$1',    ['filter' => 'adminauth']);
 
+// Product reviews — public
+$routes->get( 'shop/products/(:num)/reviews', '\App\Infrastructure\Http\Controllers\Shop\Reviews::index/$1');
+$routes->post('shop/products/(:num)/reviews', '\App\Infrastructure\Http\Controllers\Shop\Reviews::store/$1');
+
+// Product reviews — admin
+$routes->get(   'admin/shop/reviews',         '\App\Infrastructure\Http\Controllers\Admin\Shop\Reviews::index',        ['filter' => 'adminauth']);
+$routes->patch( 'admin/shop/reviews/(:num)',  '\App\Infrastructure\Http\Controllers\Admin\Shop\Reviews::moderate/$1',  ['filter' => 'adminauth']);
+$routes->delete('admin/shop/reviews/(:num)',  '\App\Infrastructure\Http\Controllers\Admin\Shop\Reviews::destroy/$1',   ['filter' => 'adminauth']);
+
+// Partial refund
+$routes->post('admin/shop/orders/(:num)/partial-refund', '\App\Infrastructure\Http\Controllers\Admin\Shop\Orders::partialRefund/$1', ['filter' => 'adminauth']);
+
 $routes->post('admin/upload',         '\App\Infrastructure\Http\Controllers\Admin\Upload::store',    ['filter' => 'adminauth']);
 $routes->post('admin/upload-pdf',     '\App\Infrastructure\Http\Controllers\Admin\UploadPdf::store', ['filter' => 'adminauth']);
 $routes->post('admin/pages',          '\App\Infrastructure\Http\Controllers\Admin\Pages::create',    ['filter' => 'adminauth']);
