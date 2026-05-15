@@ -2,6 +2,17 @@
 
 ## Stack
 CodeIgniter 4 PHP REST API. Layered architecture: Domain → Application → Infrastructure. Explicit routes only.
+- Backend: PHP (CodeIgniter 4 with repository pattern)
+- Frontend: Nuxt.js (TypeScript) — see client-site/
+- Services: Cloudinary for images, email integration
+- Always follow the repository/service pattern for all code.
+
+## Deployment
+- Shared hosting environment (Afrihost). Writable directories, symlinks, and FCPATH must be verified after any deployment-related changes.
+- Always confirm the working directory before running server-side commands.
+
+## UI Conventions
+- When making UI changes to admin pages, match the existing built-in page editor styling. Check existing editor components before creating new ones.
 
 ## Dev Commands
 ```bash
