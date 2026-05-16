@@ -227,5 +227,9 @@ Create once: `mysql -u root -e "CREATE DATABASE IF NOT EXISTS client_cms_test;"`
 - No new dependencies without explicit approval — justify need, alternatives, maintenance status
 
 ## Skills
-Use `/backend-architect` for adding controllers, routes, and DB queries.
-Use `/deployment` when deploying to cPanel shared hosting.
+Skills are stored in `.claude/skills/` within this project directory. Always resolve skill paths relative to `client-api/` — never reference skills from a sibling directory.
+
+- `/backend-architect` — for adding controllers, routes, handlers, repositories, and DB queries (defined in `client-api/.claude/skills/`)
+- `/deployment` — for deploying to cPanel shared hosting (defined in `client-api/.claude/skills/`)
+
+**Rule:** When a skill is invoked inside `client-api/`, all file reads, writes, and commands execute relative to `client-api/`. Skills must never assume or change the working directory to a parent or sibling repo (`client-site/`, `client-template/`, etc.) unless the skill description explicitly states cross-repo scope.
