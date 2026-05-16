@@ -4,39 +4,43 @@ namespace App\Application\Core\Handlers;
 
 use App\Application\Core\Commands\AdminLoginCommand;
 use App\Domain\Core\AdminSessionRepositoryInterface;
-use App\Domain\Core\SettingsRepositoryInterface;
+use App\Domain\Core\AdminUserRepositoryInterface;
 
 final class AdminLoginHandler
 {
     public function __construct(
-        private readonly SettingsRepositoryInterface    $settings,
+        private readonly AdminUserRepositoryInterface    $users,
         private readonly AdminSessionRepositoryInterface $sessions,
     ) {}
 
     /**
-     * Verifies the admin password and creates a session.
-     * Returns the raw session token on success.
-     * Throws \InvalidArgumentException on bad credentials.
+     * Verifies email + password and creates a session.
+     * Returns ['token' => string, 'role' => string, 'name' => string].
+     * Throws \InvalidArgumentException on bad credentials or inactive account.
      */
-    public function handle(AdminLoginCommand $cmd): string
+    public function handle(AdminLoginCommand $cmd): array
     {
-        $hash = $this->settings->get('admin_password_hash');
+        $user = $this->users->findByEmail($cmd->email);
 
-        // bcryptjs produces $2b$ prefix; PHP password_verify requires $2y$
-        $normalised = str_starts_with($hash, '$2b$')
-            ? '$2y$' . substr($hash, 4)
-            : $hash;
+        // Same error message for wrong email vs wrong password — prevents enumeration
+        if ($user === null || !password_verify($cmd->password, $user['password_hash'])) {
+            throw new \InvalidArgumentException('Invalid credentials.');
+        }
 
-        if ($hash === '' || !password_verify($cmd->password, $normalised)) {
-            throw new \InvalidArgumentException('Invalid password.');
+        if (!(bool) $user['is_active']) {
+            throw new \RuntimeException('Account disabled.');
         }
 
         $this->sessions->deleteExpired();
 
         $token     = bin2hex(random_bytes(32));
         $expiresAt = date('Y-m-d H:i:s', strtotime('+24 hours'));
-        $this->sessions->create($token, $expiresAt);
+        $this->sessions->create($token, $expiresAt, (int) $user['id'], $user['role']);
 
-        return $token;
+        return [
+            'token' => $token,
+            'role'  => $user['role'],
+            'name'  => $user['name'],
+        ];
     }
 }

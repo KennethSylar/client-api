@@ -6,11 +6,13 @@ use App\Domain\Core\AdminSessionRepositoryInterface;
 
 class MySqlAdminSessionRepository extends AbstractMysqlRepository implements AdminSessionRepositoryInterface
 {
-    public function create(string $token, string $expiresAt): void
+    public function create(string $token, string $expiresAt, int $userId, string $role): void
     {
         $this->db->table('admin_sessions')->insert([
             'token'      => $token,
             'expires_at' => $expiresAt,
+            'user_id'    => $userId,
+            'role'       => $role,
         ]);
     }
 

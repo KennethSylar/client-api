@@ -42,6 +42,12 @@ class Services extends BaseService
         return new \App\Infrastructure\Persistence\MySqlAdminSessionRepository();
     }
 
+    public static function adminUserRepository(bool $getShared = true): \App\Domain\Core\AdminUserRepositoryInterface
+    {
+        if ($getShared) return static::getSharedInstance('adminUserRepository');
+        return new \App\Infrastructure\Persistence\MySqlAdminUserRepository();
+    }
+
     public static function categoryRepository(bool $getShared = true): \App\Domain\Shop\CategoryRepositoryInterface
     {
         if ($getShared) return static::getSharedInstance('categoryRepository');
@@ -136,9 +142,27 @@ class Services extends BaseService
     {
         if ($getShared) return static::getSharedInstance('adminLoginHandler');
         return new \App\Application\Core\Handlers\AdminLoginHandler(
-            static::settingsRepository(),
+            static::adminUserRepository(),
             static::adminSessionRepository(),
         );
+    }
+
+    public static function createAdminUserHandler(bool $getShared = true): \App\Application\Core\Handlers\CreateAdminUserHandler
+    {
+        if ($getShared) return static::getSharedInstance('createAdminUserHandler');
+        return new \App\Application\Core\Handlers\CreateAdminUserHandler(static::adminUserRepository());
+    }
+
+    public static function updateAdminUserHandler(bool $getShared = true): \App\Application\Core\Handlers\UpdateAdminUserHandler
+    {
+        if ($getShared) return static::getSharedInstance('updateAdminUserHandler');
+        return new \App\Application\Core\Handlers\UpdateAdminUserHandler(static::adminUserRepository());
+    }
+
+    public static function deleteAdminUserHandler(bool $getShared = true): \App\Application\Core\Handlers\DeleteAdminUserHandler
+    {
+        if ($getShared) return static::getSharedInstance('deleteAdminUserHandler');
+        return new \App\Application\Core\Handlers\DeleteAdminUserHandler(static::adminUserRepository());
     }
 
     public static function updateSettingsHandler(bool $getShared = true): \App\Application\Core\Handlers\UpdateSettingsHandler

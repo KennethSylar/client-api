@@ -37,10 +37,17 @@ $routes->post('admin/logout', '\App\Infrastructure\Http\Controllers\Admin\Auth::
 $routes->get('admin/me',      '\App\Infrastructure\Http\Controllers\Admin\Auth::me',       ['filter' => 'adminauth']);
 
 // ----------------------------------------------------------------
-// Protected admin routes
+// Protected admin routes — admin role only (content, settings, users)
 // ----------------------------------------------------------------
-$routes->get('admin/settings', '\App\Infrastructure\Http\Controllers\Admin\Settings::index',  ['filter' => 'adminauth']);
-$routes->put('admin/settings', '\App\Infrastructure\Http\Controllers\Admin\Settings::update', ['filter' => 'adminauth']);
+$routes->get('admin/settings', '\App\Infrastructure\Http\Controllers\Admin\Settings::index',  ['filter' => 'adminonlyauth']);
+$routes->put('admin/settings', '\App\Infrastructure\Http\Controllers\Admin\Settings::update', ['filter' => 'adminonlyauth']);
+
+// Admin users management — admin role only
+$routes->get(   'admin/users',        '\App\Infrastructure\Http\Controllers\Admin\Users::index',      ['filter' => 'adminonlyauth']);
+$routes->post(  'admin/users',        '\App\Infrastructure\Http\Controllers\Admin\Users::create',     ['filter' => 'adminonlyauth']);
+$routes->get(   'admin/users/(:num)', '\App\Infrastructure\Http\Controllers\Admin\Users::show/$1',    ['filter' => 'adminonlyauth']);
+$routes->put(   'admin/users/(:num)', '\App\Infrastructure\Http\Controllers\Admin\Users::update/$1',  ['filter' => 'adminonlyauth']);
+$routes->delete('admin/users/(:num)', '\App\Infrastructure\Http\Controllers\Admin\Users::delete/$1',  ['filter' => 'adminonlyauth']);
 
 // ----------------------------------------------------------------
 // Shop — public
@@ -124,8 +131,8 @@ $routes->get('admin/analytics/orders-by-status', '\App\Infrastructure\Http\Contr
 $routes->get('admin/analytics/top-products',     '\App\Infrastructure\Http\Controllers\Admin\Analytics::topProducts',     ['filter' => 'adminauth']);
 $routes->get('admin/analytics/export',           '\App\Infrastructure\Http\Controllers\Admin\Analytics::export',           ['filter' => 'adminauth']);
 
-$routes->post('admin/upload',         '\App\Infrastructure\Http\Controllers\Admin\Upload::store',    ['filter' => 'adminauth']);
-$routes->post('admin/upload-pdf',     '\App\Infrastructure\Http\Controllers\Admin\UploadPdf::store', ['filter' => 'adminauth']);
-$routes->post('admin/pages',          '\App\Infrastructure\Http\Controllers\Admin\Pages::create',    ['filter' => 'adminauth']);
-$routes->put('admin/pages/(:segment)','\App\Infrastructure\Http\Controllers\Admin\Pages::update/$1', ['filter' => 'adminauth']);
-$routes->delete('admin/pages/(:segment)', '\App\Infrastructure\Http\Controllers\Admin\Pages::delete/$1', ['filter' => 'adminauth']);
+$routes->post('admin/upload',         '\App\Infrastructure\Http\Controllers\Admin\Upload::store',    ['filter' => 'adminonlyauth']);
+$routes->post('admin/upload-pdf',     '\App\Infrastructure\Http\Controllers\Admin\UploadPdf::store', ['filter' => 'adminonlyauth']);
+$routes->post('admin/pages',          '\App\Infrastructure\Http\Controllers\Admin\Pages::create',    ['filter' => 'adminonlyauth']);
+$routes->put('admin/pages/(:segment)','\App\Infrastructure\Http\Controllers\Admin\Pages::update/$1', ['filter' => 'adminonlyauth']);
+$routes->delete('admin/pages/(:segment)', '\App\Infrastructure\Http\Controllers\Admin\Pages::delete/$1', ['filter' => 'adminonlyauth']);

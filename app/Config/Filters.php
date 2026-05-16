@@ -3,6 +3,7 @@
 namespace Config;
 
 use App\Infrastructure\Http\Filters\AdminAuth;
+use App\Infrastructure\Http\Filters\AdminOnlyAuth;
 use App\Infrastructure\Http\Filters\Cors;
 use App\Infrastructure\Http\Filters\SecurityHeaders;
 use CodeIgniter\Config\BaseConfig;
@@ -16,6 +17,7 @@ class Filters extends BaseConfig
         'honeypot'       => \CodeIgniter\Filters\Honeypot::class,
         'invalidchars'   => \CodeIgniter\Filters\InvalidChars::class,
         'adminauth'      => AdminAuth::class,
+        'adminonlyauth'  => AdminOnlyAuth::class,
         'cors'           => Cors::class,
         'securityheaders'=> SecurityHeaders::class,
     ];

@@ -7,10 +7,11 @@ use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 
 /**
- * Allows any authenticated admin (admin or shop_admin role).
- * Sets AdminAuthContext for use by controllers and downstream filters.
+ * Restricts access to users with the 'admin' role only.
+ * Must be chained after AdminAuth (which sets AdminAuthContext).
+ * Used on routes that shop_admin should not access.
  */
-class AdminAuth implements FilterInterface
+class AdminOnlyAuth implements FilterInterface
 {
     public function before(RequestInterface $request, $arguments = null)
     {
@@ -32,6 +33,10 @@ class AdminAuth implements FilterInterface
             'user_id' => (int) $session['user_id'],
             'role'    => $session['role'],
         ]);
+
+        if ($session['role'] !== 'admin') {
+            return $this->forbidden('Insufficient permissions');
+        }
     }
 
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null) {}
@@ -40,6 +45,14 @@ class AdminAuth implements FilterInterface
     {
         return service('response')
             ->setStatusCode(401)
+            ->setContentType('application/json')
+            ->setBody(json_encode(['error' => $message]));
+    }
+
+    private function forbidden(string $message): ResponseInterface
+    {
+        return service('response')
+            ->setStatusCode(403)
             ->setContentType('application/json')
             ->setBody(json_encode(['error' => $message]));
     }
