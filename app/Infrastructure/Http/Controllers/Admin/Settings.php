@@ -63,6 +63,14 @@ class Settings extends BaseController
             return $this->error('No data provided.', 400);
         }
 
+        // Strip any sensitive key whose value is still the masked placeholder —
+        // this means the admin did not change it and we must preserve the real value.
+        foreach (self::SENSITIVE_KEYS as $key) {
+            if (isset($body[$key]) && $body[$key] === '••••••••') {
+                unset($body[$key]);
+            }
+        }
+
         service('updateSettingsHandler')->handle(new UpdateSettingsCommand($body));
 
         return $this->ok();
