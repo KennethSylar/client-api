@@ -76,6 +76,8 @@ $routes->delete('shop/account/addresses/(:num)',  '\App\Infrastructure\Http\Cont
 // Shop — admin (protected)
 // ----------------------------------------------------------------
 $routes->get(   'admin/shop/products',               '\App\Infrastructure\Http\Controllers\Admin\Shop\Products::index',       ['filter' => 'adminauth']);
+$routes->get(   'admin/shop/products/export',        '\App\Infrastructure\Http\Controllers\Admin\Shop\Products::export',       ['filter' => 'adminauth']);
+$routes->post(  'admin/shop/products/import',        '\App\Infrastructure\Http\Controllers\Admin\Shop\Products::import',       ['filter' => 'adminauth']);
 $routes->post(  'admin/shop/products',               '\App\Infrastructure\Http\Controllers\Admin\Shop\Products::create',      ['filter' => 'adminauth']);
 $routes->get(   'admin/shop/products/(:num)',         '\App\Infrastructure\Http\Controllers\Admin\Shop\Products::show/$1',     ['filter' => 'adminauth']);
 $routes->put(   'admin/shop/products/(:num)',         '\App\Infrastructure\Http\Controllers\Admin\Shop\Products::update/$1',   ['filter' => 'adminauth']);
@@ -88,12 +90,15 @@ $routes->post(  'admin/shop/products/(:num)/images',          '\App\Infrastructu
 $routes->patch( 'admin/shop/products/(:num)/images/reorder',  '\App\Infrastructure\Http\Controllers\Admin\Shop\Images::reorder/$1',     ['filter' => 'adminauth']);
 $routes->delete('admin/shop/products/(:num)/images/(:num)',   '\App\Infrastructure\Http\Controllers\Admin\Shop\Images::delete/$1/$2',   ['filter' => 'adminauth']);
 
+$routes->get(   'admin/shop/categories/export',        '\App\Infrastructure\Http\Controllers\Admin\Shop\Categories::export',   ['filter' => 'adminauth']);
+$routes->post(  'admin/shop/categories/import',        '\App\Infrastructure\Http\Controllers\Admin\Shop\Categories::import',   ['filter' => 'adminauth']);
 $routes->post(  'admin/shop/categories',              '\App\Infrastructure\Http\Controllers\Admin\Shop\Categories::create',   ['filter' => 'adminauth']);
 $routes->put(   'admin/shop/categories/(:num)',        '\App\Infrastructure\Http\Controllers\Admin\Shop\Categories::update/$1',['filter' => 'adminauth']);
 $routes->delete('admin/shop/categories/(:num)',        '\App\Infrastructure\Http\Controllers\Admin\Shop\Categories::delete/$1',['filter' => 'adminauth']);
 $routes->patch( 'admin/shop/categories/reorder',       '\App\Infrastructure\Http\Controllers\Admin\Shop\Categories::reorder',  ['filter' => 'adminauth']);
 
 $routes->get(   'admin/shop/orders',                           '\App\Infrastructure\Http\Controllers\Admin\Shop\Orders::index',         ['filter' => 'adminauth']);
+$routes->get(   'admin/shop/orders/export',                    '\App\Infrastructure\Http\Controllers\Admin\Shop\Orders::export',         ['filter' => 'adminauth']);
 $routes->get(   'admin/shop/orders/(:num)',                    '\App\Infrastructure\Http\Controllers\Admin\Shop\Orders::show/$1',       ['filter' => 'adminauth']);
 $routes->patch( 'admin/shop/orders/(:num)/status',             '\App\Infrastructure\Http\Controllers\Admin\Shop\Orders::updateStatus/$1', ['filter' => 'adminauth']);
 $routes->post(  'admin/shop/orders/(:num)/refund',             '\App\Infrastructure\Http\Controllers\Admin\Shop\Orders::refund/$1',     ['filter' => 'adminauth']);
@@ -111,6 +116,13 @@ $routes->delete('admin/shop/reviews/(:num)',  '\App\Infrastructure\Http\Controll
 
 // Partial refund
 $routes->post('admin/shop/orders/(:num)/partial-refund', '\App\Infrastructure\Http\Controllers\Admin\Shop\Orders::partialRefund/$1', ['filter' => 'adminauth']);
+
+// Analytics (admin)
+$routes->get('admin/analytics/overview',         '\App\Infrastructure\Http\Controllers\Admin\Analytics::overview',        ['filter' => 'adminauth']);
+$routes->get('admin/analytics/revenue',          '\App\Infrastructure\Http\Controllers\Admin\Analytics::revenue',         ['filter' => 'adminauth']);
+$routes->get('admin/analytics/orders-by-status', '\App\Infrastructure\Http\Controllers\Admin\Analytics::ordersByStatus',  ['filter' => 'adminauth']);
+$routes->get('admin/analytics/top-products',     '\App\Infrastructure\Http\Controllers\Admin\Analytics::topProducts',     ['filter' => 'adminauth']);
+$routes->get('admin/analytics/export',           '\App\Infrastructure\Http\Controllers\Admin\Analytics::export',           ['filter' => 'adminauth']);
 
 $routes->post('admin/upload',         '\App\Infrastructure\Http\Controllers\Admin\Upload::store',    ['filter' => 'adminauth']);
 $routes->post('admin/upload-pdf',     '\App\Infrastructure\Http\Controllers\Admin\UploadPdf::store', ['filter' => 'adminauth']);

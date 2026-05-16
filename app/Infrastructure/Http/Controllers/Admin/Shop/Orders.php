@@ -128,6 +128,70 @@ class Orders extends BaseController
             ->setBody($pdf);
     }
 
+    public function export(): \CodeIgniter\HTTP\ResponseInterface
+    {
+        $status = $this->request->getGet('status') ?? '';
+        $search = trim($this->request->getGet('search') ?? '');
+
+        // Fetch all matching orders (no pagination)
+        $result = service('listOrdersHandler')->handle(new ListOrdersQuery(
+            page:    1,
+            perPage: 10000,
+            status:  $status,
+            search:  $search,
+        ));
+
+        $rows = array_map([$this, 'formatOrder'], $result->items);
+
+        $headers = [
+            'ID', 'Date', 'Status', 'First Name', 'Last Name', 'Email', 'Phone',
+            'Address', 'City', 'Province', 'Postal Code', 'Country',
+            'Subtotal', 'VAT', 'Shipping', 'Total', 'Currency',
+            'Gateway', 'Payment Ref', 'Paid At', 'Notes',
+        ];
+
+        $out = fopen('php://temp', 'r+');
+        fputcsv($out, $headers);
+
+        foreach ($rows as $o) {
+            fputcsv($out, [
+                $o['id'],
+                $o['created_at'],
+                $o['status'],
+                $o['first_name'],
+                $o['last_name'],
+                $o['email'],
+                $o['phone'],
+                trim(($o['address_line1'] ?? '') . ' ' . ($o['address_line2'] ?? '')),
+                $o['city'],
+                $o['province'],
+                $o['postal_code'],
+                $o['country'],
+                number_format($o['subtotal_cents']  / 100, 2, '.', ''),
+                number_format($o['vat_cents']       / 100, 2, '.', ''),
+                number_format($o['shipping_cents']  / 100, 2, '.', ''),
+                number_format($o['total_cents']     / 100, 2, '.', ''),
+                $o['currency'],
+                $o['payment_gateway'],
+                $o['payment_reference'],
+                $o['paid_at'],
+                $o['notes'],
+            ]);
+        }
+
+        rewind($out);
+        $csv = stream_get_contents($out);
+        fclose($out);
+
+        $filename = 'orders-' . date('Y-m-d') . '.csv';
+
+        return $this->response
+            ->setStatusCode(200)
+            ->setHeader('Content-Type', 'text/csv; charset=UTF-8')
+            ->setHeader('Content-Disposition', "attachment; filename=\"{$filename}\"")
+            ->setBody("\xEF\xBB\xBF" . $csv); // BOM for Excel UTF-8
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────
 
     private function formatOrder(Order $o): array
