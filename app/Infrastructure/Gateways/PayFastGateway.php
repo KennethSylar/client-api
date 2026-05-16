@@ -21,7 +21,7 @@ class PayFastGateway implements PaymentGatewayInterface
         $amount = number_format($order->total->amountCents / 100, 2, '.', '');
 
         // Default to LIVE — must explicitly set PAYFAST_TEST=true in .env to use sandbox
-        $isTest = env('PAYFAST_TEST', 'false') === 'true';
+        $isTest = (bool) env('PAYFAST_TEST', false);
         if ($isTest) {
             log_message('warning', 'PayFast running in SANDBOX/TEST mode — no real payments processed');
         }
@@ -56,7 +56,13 @@ class PayFastGateway implements PaymentGatewayInterface
         }
         $data['signature'] = md5($sigString);
 
-        return "https://{$host}/eng/process?" . http_build_query($data);
+        $url = "https://{$host}/eng/process?" . http_build_query($data);
+
+        // DEBUG — remove before go-live
+        log_message('debug', 'PayFast payload: ' . json_encode(array_merge($data, ['merchant_key' => '***', 'passphrase_used' => $passphrase !== '' ? 'yes' : 'NO — blank']), JSON_PRETTY_PRINT));
+        log_message('debug', 'PayFast URL: ' . $url);
+
+        return $url;
     }
 
     public function verifyNotification(array $payload, array $gatewaySettings): bool
