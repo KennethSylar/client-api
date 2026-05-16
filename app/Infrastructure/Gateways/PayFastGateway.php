@@ -56,13 +56,7 @@ class PayFastGateway implements PaymentGatewayInterface
         }
         $data['signature'] = md5($sigString);
 
-        $url = "https://{$host}/eng/process?" . http_build_query($data);
-
-        // DEBUG — remove before go-live
-        log_message('debug', 'PayFast payload: ' . json_encode(array_merge($data, ['merchant_key' => '***', 'passphrase_used' => $passphrase !== '' ? 'yes' : 'NO — blank']), JSON_PRETTY_PRINT));
-        log_message('debug', 'PayFast URL: ' . $url);
-
-        return $url;
+        return "https://{$host}/eng/process?" . http_build_query($data);
     }
 
     public function verifyNotification(array $payload, array $gatewaySettings): bool
