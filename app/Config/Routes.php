@@ -82,6 +82,10 @@ $routes->delete('shop/account/addresses/(:num)',  '\App\Infrastructure\Http\Cont
 // ----------------------------------------------------------------
 // Shop — admin (protected)
 // ----------------------------------------------------------------
+// Shop settings — accessible to both admin and shop_admin roles
+$routes->get('admin/shop/settings', '\App\Infrastructure\Http\Controllers\Admin\Shop\Settings::index',  ['filter' => 'adminauth']);
+$routes->put('admin/shop/settings', '\App\Infrastructure\Http\Controllers\Admin\Shop\Settings::update', ['filter' => 'adminauth']);
+
 $routes->get(   'admin/shop/products',               '\App\Infrastructure\Http\Controllers\Admin\Shop\Products::index',       ['filter' => 'adminauth']);
 $routes->get(   'admin/shop/products/export',        '\App\Infrastructure\Http\Controllers\Admin\Shop\Products::export',       ['filter' => 'adminauth']);
 $routes->post(  'admin/shop/products/import',        '\App\Infrastructure\Http\Controllers\Admin\Shop\Products::import',       ['filter' => 'adminauth']);
