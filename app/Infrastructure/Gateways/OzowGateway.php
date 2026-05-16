@@ -32,10 +32,12 @@ class OzowGateway implements PaymentGatewayInterface
 
         // Hash field order per v1.0 docs (Step 1: Post from merchant website)
         // SiteCode + CountryCode + CurrencyCode + Amount + TransactionReference +
-        // BankReference + CancelUrl + ErrorUrl + SuccessUrl + NotifyUrl + IsTest + PrivateKey
+        // BankReference + Optional1–5 (empty) + CancelUrl + ErrorUrl + SuccessUrl +
+        // NotifyUrl + IsTest + PrivateKey
         $hashInput = strtolower(
             $siteCode . 'ZA' . $order->currency . $amount . $transRef .
-            $bankRef . $cancelUrl . $errorUrl . $returnUrl . $notifyUrl . $isTestStr . $privateKey
+            $bankRef . '' . '' . '' . '' . '' .
+            $cancelUrl . $errorUrl . $returnUrl . $notifyUrl . $isTestStr . $privateKey
         );
         $hash = hash('sha512', $hashInput);
 
@@ -74,6 +76,7 @@ class OzowGateway implements PaymentGatewayInterface
         curl_close($ch);
 
         if ($response === false || $httpCode !== 200) {
+            log_message('error', "OzowGateway: HTTP {$httpCode} — " . ($response ?: curl_error($ch)));
             throw new \RuntimeException("Ozow payment request failed (HTTP {$httpCode}).");
         }
 

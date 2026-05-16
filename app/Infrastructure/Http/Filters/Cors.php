@@ -30,7 +30,7 @@ class Cors implements FilterInterface
 
         $response = service('response');
         $response->setHeader('Access-Control-Allow-Origin',      $allowedOrigin);
-        $response->setHeader('Access-Control-Allow-Methods',     'GET, POST, PUT, DELETE, OPTIONS');
+        $response->setHeader('Access-Control-Allow-Methods',     'GET, POST, PUT, PATCH, DELETE, OPTIONS');
         $response->setHeader('Access-Control-Allow-Headers',     'Content-Type, Authorization, X-Requested-With, Cookie');
         $response->setHeader('Access-Control-Allow-Credentials', 'true');
         $response->setHeader('Access-Control-Max-Age',           '86400');
