@@ -12,6 +12,12 @@ use Tests\Support\FeatureTestCase;
  * GET  /shop/account/me
  * PUT  /shop/account/me
  * GET  /shop/account/orders
+ *
+ * Cookie auth tests (Epic A-1):
+ * - login/register set jnv_customer_session httpOnly cookie
+ * - logout expires cookie
+ * - GET /me authenticates via cookie (no Bearer header)
+ * - cookie takes precedence over invalid Bearer header
  */
 class CustomerAuthTest extends FeatureTestCase
 {
@@ -48,6 +54,12 @@ class CustomerAuthTest extends FeatureTestCase
     private function withToken(string $token): static
     {
         return $this->withHeaders(['Authorization' => 'Bearer ' . $token]);
+    }
+
+    private function withCookie(string $token): static
+    {
+        service('superglobals')->setCookie('jnv_customer_session', $token);
+        return $this;
     }
 
     // ── Guards ───────────────────────────────────────────────────────
@@ -247,5 +259,112 @@ class CustomerAuthTest extends FeatureTestCase
     {
         $this->enableShop();
         $this->get('shop/account/orders')->assertStatus(401);
+    }
+
+    // ── Cookie auth (Epic A-1) ────────────────────────────────────────
+
+    public function test_login_sets_httponly_cookie(): void
+    {
+        $this->enableShop();
+        $this->seedCustomer(['email' => 'cookie-login@example.com']);
+
+        $result = $this->post('shop/account/login', [
+            'email'    => 'cookie-login@example.com',
+            'password' => 'secret123',
+        ]);
+        $result->assertStatus(200);
+
+        $cookie = $result->response()->getCookie('jnv_customer_session');
+        $this->assertNotNull($cookie, 'jnv_customer_session cookie must be present on login');
+        $this->assertNotEmpty($cookie->getValue(), 'Cookie value must not be empty');
+        $this->assertTrue($cookie->isHttpOnly(), 'Cookie must be HttpOnly');
+        $this->assertSame('Lax', $cookie->getSameSite(), 'Cookie SameSite must be Lax');
+    }
+
+    public function test_register_sets_httponly_cookie(): void
+    {
+        $this->enableShop();
+
+        $result = $this->post('shop/account/register', [
+            'first_name' => 'Cookie',
+            'last_name'  => 'Test',
+            'email'      => 'cookie-reg@example.com',
+            'password'   => 'password123',
+        ]);
+        $result->assertStatus(200);
+
+        $cookie = $result->response()->getCookie('jnv_customer_session');
+        $this->assertNotNull($cookie, 'jnv_customer_session cookie must be present on register');
+        $this->assertNotEmpty($cookie->getValue(), 'Cookie value must not be empty');
+        $this->assertTrue($cookie->isHttpOnly(), 'Cookie must be HttpOnly');
+        $this->assertSame('Lax', $cookie->getSameSite(), 'Cookie SameSite must be Lax');
+    }
+
+    public function test_logout_expires_cookie(): void
+    {
+        $this->enableShop();
+        $customer = $this->seedCustomer();
+        $token    = $this->seedSession($customer['id']);
+
+        $result = $this->withCookie($token)->post('shop/account/logout', []);
+        $result->assertStatus(200);
+
+        $cookie = $result->response()->getCookie('jnv_customer_session');
+        $this->assertNotNull($cookie, 'Response must include Set-Cookie to expire it');
+        $this->assertSame('', $cookie->getValue(), 'Expired cookie must have empty value');
+    }
+
+    public function test_me_authenticates_via_cookie(): void
+    {
+        $this->enableShop();
+        $customer = $this->seedCustomer();
+        $token    = $this->seedSession($customer['id']);
+
+        // No Authorization header — only cookie
+        $result = $this->withCookie($token)->get('shop/account/me');
+        $result->assertStatus(200);
+
+        $data = $this->json($result);
+        $this->assertSame($customer['id'], $data['customer']['id']);
+    }
+
+    public function test_me_returns_401_with_invalid_cookie(): void
+    {
+        $this->enableShop();
+
+        $result = $this->withCookie('not-a-real-token')->get('shop/account/me');
+        $result->assertStatus(401);
+    }
+
+    public function test_cookie_takes_precedence_over_invalid_bearer(): void
+    {
+        $this->enableShop();
+        $customer = $this->seedCustomer();
+        $token    = $this->seedSession($customer['id']);
+
+        // Valid cookie + invalid Bearer — filter should use cookie and succeed
+        $result = $this->withCookie($token)
+                       ->withHeaders(['Authorization' => 'Bearer invalid-bearer-token'])
+                       ->get('shop/account/me');
+        $result->assertStatus(200);
+
+        $this->assertSame($customer['id'], $this->json($result)['customer']['id']);
+    }
+
+    public function test_login_cookie_token_matches_response_body_token(): void
+    {
+        $this->enableShop();
+        $this->seedCustomer(['email' => 'tokencheck@example.com']);
+
+        $result = $this->post('shop/account/login', [
+            'email'    => 'tokencheck@example.com',
+            'password' => 'secret123',
+        ]);
+        $result->assertStatus(200);
+
+        $bodyToken   = $this->json($result)['token'];
+        $cookieToken = $result->response()->getCookie('jnv_customer_session')->getValue();
+
+        $this->assertSame($bodyToken, $cookieToken, 'Cookie token must match body token');
     }
 }
