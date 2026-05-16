@@ -17,6 +17,13 @@ class PaymentNotify extends BaseController
             return $this->response->setStatusCode(400)->setBody('Bad Request');
         }
 
+        // Rate limit: 30 notifications per minute per IP
+        $ip = $this->request->getIPAddress();
+        if ($this->rateLimited("payfast_notify_{$ip}", 30, 60)) {
+            log_message('warning', "PayFast ITN rate limit exceeded from {$ip}");
+            return $this->response->setStatusCode(429)->setBody('Too Many Requests');
+        }
+
         $orderId = (int) $post['m_payment_id'];
 
         $gatewaySettings = service('settingsRepository')->getMany([
@@ -27,28 +34,35 @@ class PaymentNotify extends BaseController
 
         if (!service('payfastGateway')->verifyNotification($post, $gatewaySettings)) {
             log_message('error', "PayFast ITN signature mismatch for order {$orderId}");
-            return $this->response->setStatusCode(400)->setBody('Invalid signature');
+            return $this->response->setStatusCode(400)->setBody('Invalid notification');
         }
 
         $order = service('getOrderHandler')->handle(new GetOrderQuery(id: $orderId));
         if (!$order) {
-            return $this->response->setStatusCode(404)->setBody('Order not found');
+            log_message('error', "PayFast ITN for unknown order {$orderId}");
+            return $this->response->setStatusCode(400)->setBody('Invalid notification');
         }
 
         $expectedRand = $order->total->amountCents / 100;
         $receivedRand = (float) ($post['amount_gross'] ?? 0);
         if (abs($expectedRand - $receivedRand) > 0.05) {
-            log_message('error', "PayFast amount mismatch: expected {$expectedRand}, got {$receivedRand}");
+            log_message('error', "PayFast amount mismatch: expected {$expectedRand}, got {$receivedRand} for order {$orderId}");
             return $this->response->setStatusCode(400)->setBody('Amount mismatch');
         }
 
         $paymentStatus = $post['payment_status'];
+        $pfPaymentId   = $post['pf_payment_id'] ?? '';
 
         if ($paymentStatus === 'COMPLETE') {
+            // Idempotency: skip if already paid with the same gateway reference
+            if ($order->isPaid() && $order->paymentReference === $pfPaymentId) {
+                return $this->response->setStatusCode(200)->setBody('OK');
+            }
+
             service('recordPaymentHandler')->handle(new RecordPaymentCommand(
                 orderId:   $orderId,
                 gateway:   'payfast',
-                reference: $post['pf_payment_id'] ?? '',
+                reference: $pfPaymentId,
             ));
         } elseif (in_array($paymentStatus, ['FAILED', 'CANCELLED'], true)) {
             service('cancelOrderHandler')->handle(new CancelOrderCommand(
@@ -69,6 +83,13 @@ class PaymentNotify extends BaseController
             return $this->response->setStatusCode(400)->setBody('Bad Request');
         }
 
+        // Rate limit: 30 notifications per minute per IP
+        $ip = $this->request->getIPAddress();
+        if ($this->rateLimited("ozow_notify_{$ip}", 30, 60)) {
+            log_message('warning', "Ozow notify rate limit exceeded from {$ip}");
+            return $this->response->setStatusCode(429)->setBody('Too Many Requests');
+        }
+
         $orderId = (int) $body['TransactionReference'];
 
         $gatewaySettings = service('settingsRepository')->getMany([
@@ -78,18 +99,19 @@ class PaymentNotify extends BaseController
 
         if (!service('ozowGateway')->verifyNotification($body, $gatewaySettings)) {
             log_message('error', "Ozow hash mismatch for order {$orderId}");
-            return $this->response->setStatusCode(400)->setBody('Invalid hash');
+            return $this->response->setStatusCode(400)->setBody('Invalid notification');
         }
 
         $order = service('getOrderHandler')->handle(new GetOrderQuery(id: $orderId));
         if (!$order) {
-            return $this->response->setStatusCode(404)->setBody('Order not found');
+            log_message('error', "Ozow notify for unknown order {$orderId}");
+            return $this->response->setStatusCode(400)->setBody('Invalid notification');
         }
 
         $expectedRand = $order->total->amountCents / 100;
         $receivedRand = (float) ($body['Amount'] ?? 0);
         if (abs($expectedRand - $receivedRand) > 0.05) {
-            log_message('error', "Ozow amount mismatch: expected {$expectedRand}, got {$receivedRand}");
+            log_message('error', "Ozow amount mismatch: expected {$expectedRand}, got {$receivedRand} for order {$orderId}");
             return $this->response->setStatusCode(400)->setBody('Amount mismatch');
         }
 
@@ -97,11 +119,13 @@ class PaymentNotify extends BaseController
         $ref    = $body['TransactionId'] ?? '';
 
         match ($status) {
-            'complete' => service('recordPaymentHandler')->handle(new RecordPaymentCommand(
-                orderId:   $orderId,
-                gateway:   'ozow',
-                reference: $ref,
-            )),
+            'complete' => ($order->isPaid() && $order->paymentReference === $ref)
+                ? null // idempotency: already processed
+                : service('recordPaymentHandler')->handle(new RecordPaymentCommand(
+                    orderId:   $orderId,
+                    gateway:   'ozow',
+                    reference: $ref,
+                )),
             'cancelled',
             'error' => service('cancelOrderHandler')->handle(new CancelOrderCommand(
                 orderId: $orderId,

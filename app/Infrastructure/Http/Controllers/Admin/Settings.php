@@ -29,11 +29,27 @@ class Settings extends BaseController
         'address_physical', 'address_postal',
     ];
 
+    /** Keys that are write-only — returned as '••••••••' when set, empty string when not set. */
+    private const SENSITIVE_KEYS = [
+        'shop_payfast_merchant_key',
+        'shop_payfast_passphrase',
+        'shop_ozow_private_key',
+        'shop_ozow_api_key',
+    ];
+
     public function index(): \CodeIgniter\HTTP\ResponseInterface
     {
         $settings = service('getSettingsHandler')->handle(
             new GetSettingsQuery(keys: self::ADMIN_SETTINGS_KEYS)
         );
+
+        // Mask sensitive values — never send secrets over the wire
+        foreach (self::SENSITIVE_KEYS as $key) {
+            if (!empty($settings[$key])) {
+                $settings[$key] = '••••••••';
+            }
+        }
+
         return $this->ok($settings);
     }
 

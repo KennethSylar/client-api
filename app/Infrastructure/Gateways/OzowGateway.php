@@ -18,7 +18,11 @@ class OzowGateway implements PaymentGatewayInterface
         $privateKey = trim($gatewaySettings['shop_ozow_private_key'] ?? '');
         $apiKey     = trim($gatewaySettings['shop_ozow_api_key']     ?? '');
 
-        $isTest    = env('OZOW_TEST', true) !== false;
+        // Default to LIVE — must explicitly set OZOW_TEST=true in .env to use sandbox
+        $isTest    = env('OZOW_TEST', 'false') === 'true';
+        if ($isTest) {
+            log_message('warning', 'Ozow running in SANDBOX/TEST mode — no real payments processed');
+        }
         $isTestStr = $isTest ? 'true' : 'false';
 
         $errorUrl   = $cancelUrl . (str_contains($cancelUrl, '?') ? '&' : '?') . 'error=1';

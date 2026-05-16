@@ -16,6 +16,12 @@ class CustomerAuth extends BaseController
     {
         if ($off = $this->shopOffline()) return $off;
 
+        // 10 registrations per hour per IP
+        $ip = $this->request->getIPAddress();
+        if ($this->rateLimited("customer_register_{$ip}", 10, 3600)) {
+            return $this->tooManyRequests('Too many registration attempts. Please try again later.');
+        }
+
         $body = $this->jsonBody();
 
         foreach (['first_name', 'last_name', 'email', 'password'] as $field) {
@@ -51,9 +57,18 @@ class CustomerAuth extends BaseController
     {
         if ($off = $this->shopOffline()) return $off;
 
+        $ip    = $this->request->getIPAddress();
         $body  = $this->jsonBody();
         $email = trim($body['email'] ?? '');
         $pass  = $body['password'] ?? '';
+
+        // 20 attempts per 15 minutes per IP, plus per-email limit
+        if ($this->rateLimited("customer_login_{$ip}", 20, 900)) {
+            return $this->tooManyRequests('Too many login attempts. Please try again in 15 minutes.');
+        }
+        if ($email !== '' && $this->rateLimited('customer_login_' . md5($email), 10, 900)) {
+            return $this->tooManyRequests('Too many login attempts for this account. Please try again in 15 minutes.');
+        }
 
         if ($email === '' || $pass === '') {
             return $this->error('Email and password are required.', 400);

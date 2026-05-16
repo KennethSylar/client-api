@@ -4,12 +4,19 @@ namespace App\Infrastructure\Http\Controllers\Admin;
 
 use App\Application\Core\Commands\AdminLoginCommand;
 use App\Infrastructure\Http\Controllers\BaseController;
-use Config\App;
 
 class Auth extends BaseController
 {
     public function login(): \CodeIgniter\HTTP\ResponseInterface
     {
+        $ip = $this->request->getIPAddress();
+
+        // 10 attempts per 15 minutes per IP
+        if ($this->rateLimited("admin_login_{$ip}", 10, 900)) {
+            log_message('warning', "Admin login rate limit exceeded from {$ip}");
+            return $this->tooManyRequests('Too many login attempts. Please try again in 15 minutes.');
+        }
+
         $body     = $this->jsonBody();
         $password = $body['password'] ?? '';
 
@@ -23,14 +30,13 @@ class Auth extends BaseController
             return $this->error($e->getMessage(), 401);
         }
 
-        $isHttps = ENVIRONMENT === 'production' && str_starts_with(config(App::class)->baseURL, 'https');
         set_cookie([
             'name'     => 'jnv_admin_session',
             'value'    => $token,
             'expire'   => 86400,
-            'secure'   => $isHttps,
+            'secure'   => (ENVIRONMENT === 'production'),
             'httponly' => true,
-            'samesite' => 'Lax',
+            'samesite' => 'Strict',
         ]);
 
         return $this->ok();

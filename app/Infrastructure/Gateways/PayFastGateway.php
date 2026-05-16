@@ -20,9 +20,12 @@ class PayFastGateway implements PaymentGatewayInterface
 
         $amount = number_format($order->total->amountCents / 100, 2, '.', '');
 
-        // PayFast requires fields in this exact order for signature calculation
-        $isTest = env('PAYFAST_TEST', 'true') !== 'false';
-        $host   = $isTest ? 'sandbox.payfast.co.za' : 'www.payfast.co.za';
+        // Default to LIVE — must explicitly set PAYFAST_TEST=true in .env to use sandbox
+        $isTest = env('PAYFAST_TEST', 'false') === 'true';
+        if ($isTest) {
+            log_message('warning', 'PayFast running in SANDBOX/TEST mode — no real payments processed');
+        }
+        $host = $isTest ? 'sandbox.payfast.co.za' : 'www.payfast.co.za';
 
         // PayFast requires fields in this exact order for signature calculation.
         // In sandbox mode use the official buyer account — PayFast blocks payment

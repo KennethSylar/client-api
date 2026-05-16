@@ -69,6 +69,41 @@ abstract class BaseController extends Controller
     }
 
     /**
+     * Returns true if the rate limit for the given key has been exceeded.
+     * Uses CI4 cache. Key is typically "action_ip" or "action_email".
+     *
+     * Usage:
+     *   if ($this->rateLimited('admin_login_' . $ip, 5, 300)) return $this->tooManyRequests();
+     */
+    protected function rateLimited(string $key, int $max, int $windowSeconds): bool
+    {
+        $cacheKey = 'rl_' . md5($key);
+        $hits     = (int) (cache($cacheKey) ?? 0);
+
+        if ($hits >= $max) {
+            return true;
+        }
+
+        // Save incremented count; keep TTL at window length from first hit
+        if ($hits === 0) {
+            cache()->save($cacheKey, 1, $windowSeconds);
+        } else {
+            // Preserve remaining TTL by re-saving with the same window
+            cache()->save($cacheKey, $hits + 1, $windowSeconds);
+        }
+
+        return false;
+    }
+
+    protected function tooManyRequests(string $message = 'Too many requests. Please try again later.'): ResponseInterface
+    {
+        return $this->response
+            ->setStatusCode(429)
+            ->setContentType('application/json')
+            ->setBody(json_encode(['error' => $message]));
+    }
+
+    /**
      * Parse JSON request body, supporting both raw JSON and form-encoded.
      */
     protected function jsonBody(): array
