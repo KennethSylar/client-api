@@ -27,6 +27,8 @@ class Settings extends BaseController
         'phone_mobile', 'phone_office', 'email', 'tagline',
         'whatsapp_number', 'whatsapp_display',
         'address_physical', 'address_postal',
+        // Navigation
+        'nav_items',
     ];
 
     /** Keys that are write-only — returned as '••••••••' when set, empty string when not set. */

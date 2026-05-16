@@ -20,8 +20,7 @@ class MainSeeder extends Seeder
         $this->seedPages();
 
         echo "Database seeded successfully.\n";
-        echo "  Next step: update admin_password_hash via the admin panel\n";
-        echo "  or run: php spark db:seed AdminPasswordSeeder\n";
+        echo "  Next: run php spark db:seed AdminUserSeeder to create the first admin account.\n";
     }
 
     // ----------------------------------------------------------------
@@ -31,14 +30,15 @@ class MainSeeder extends Seeder
     private function seedSettings(): void
     {
         $settings = [
-            // Default password is "changeme" — MUST be changed after first deploy
-            'admin_password_hash' => password_hash('changeme', PASSWORD_BCRYPT),
+            // Site identity — replace with client values
+            'site_name'       => 'Client Site',
+            'email'           => 'hello@clientdomain.com',
+            'phone_mobile'    => '',
+            'address_physical'=> '',
 
-            // Replace these with client-specific values
-            'site_name'  => 'Client Site',
-            'email'      => 'hello@clientdomain.com',
-            'phone'      => '',
-            'address'    => '',
+            // Navigation — JSON array of { label, href } objects
+            // e.g. [{"label":"About","href":"/about"},{"label":"Downloads","href":"/downloads"}]
+            'nav_items' => '[]',
         ];
 
         foreach ($settings as $key => $value) {
