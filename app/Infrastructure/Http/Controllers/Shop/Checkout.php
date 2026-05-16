@@ -98,8 +98,11 @@ class Checkout extends BaseController
         $order = $result->order;
 
         // ── 5. Build payment URL ──────────────────────────────────────
-        $appBase  = rtrim(env('app.baseURL', 'http://localhost:8080'), '/');
-        $siteBase = rtrim(env('NUXT_SITE_URL', 'http://localhost:3000'), '/');
+        // Return/cancel URLs route through the API (publicly accessible) so payment
+        // gateways accept them. The API then bounces the browser to the frontend.
+        $appBase   = rtrim(env('app.baseURL', 'http://localhost:8080'), '/');
+        $returnUrl = "{$appBase}/shop/payment/return/{$order->token}";
+        $cancelUrl = "{$appBase}/shop/payment/cancel";
 
         if ($gateway === 'payfast') {
             $gatewaySettings = service('settingsRepository')->getMany([
@@ -110,8 +113,8 @@ class Checkout extends BaseController
             $paymentUrl = service('payfastGateway')->buildPaymentUrl(
                 order:           $order,
                 gatewaySettings: $gatewaySettings,
-                returnUrl:       "{$siteBase}/shop/order/{$order->token}?ref=payment",
-                cancelUrl:       "{$siteBase}/checkout",
+                returnUrl:       $returnUrl,
+                cancelUrl:       $cancelUrl,
                 notifyUrl:       "{$appBase}/shop/payment/payfast/notify",
             );
         } else {
@@ -123,8 +126,8 @@ class Checkout extends BaseController
             $paymentUrl = service('ozowGateway')->buildPaymentUrl(
                 order:           $order,
                 gatewaySettings: $gatewaySettings,
-                returnUrl:       "{$siteBase}/shop/order/{$order->token}?ref=payment",
-                cancelUrl:       "{$siteBase}/checkout",
+                returnUrl:       $returnUrl,
+                cancelUrl:       $cancelUrl,
                 notifyUrl:       "{$appBase}/shop/payment/ozow/notify",
             );
         }

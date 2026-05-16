@@ -57,6 +57,8 @@ $routes->get( 'shop/products',            '\App\Infrastructure\Http\Controllers\
 $routes->get( 'shop/products/(:segment)', '\App\Infrastructure\Http\Controllers\Shop\Products::show/$1');
 $routes->post('shop/cart/validate',       '\App\Infrastructure\Http\Controllers\Shop\CartValidation::check');
 $routes->post('shop/checkout',            '\App\Infrastructure\Http\Controllers\Shop\Checkout::place');
+$routes->get( 'shop/payment/return/(:alphanum)', '\App\Infrastructure\Http\Controllers\Shop\PaymentReturn::success/$1');
+$routes->get( 'shop/payment/cancel',             '\App\Infrastructure\Http\Controllers\Shop\PaymentReturn::cancel');
 $routes->post('shop/payment/payfast/notify', '\App\Infrastructure\Http\Controllers\Shop\PaymentNotify::payfast');
 $routes->post('shop/payment/ozow/notify',    '\App\Infrastructure\Http\Controllers\Shop\PaymentNotify::ozow');
 $routes->get( 'shop/orders/(:alphanum)',      '\App\Infrastructure\Http\Controllers\Shop\Orders::show/$1');
