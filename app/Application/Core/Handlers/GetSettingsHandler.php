@@ -27,6 +27,12 @@ final class GetSettingsHandler
             'shop_currency', 'shop_vat_enabled', 'shop_vat_rate',
             'shop_shipping_rate', 'shop_free_shipping_from',
             'shop_payfast_enabled', 'shop_ozow_enabled', 'shop_wishlist_enabled',
+            // Appearance
+            'hero_variant', 'footer_variant', 'cta_headline',
+            // Contact (frontend keys)
+            'phone_mobile', 'phone_office', 'email', 'tagline',
+            'whatsapp_number', 'whatsapp_display',
+            'address_physical', 'address_postal',
         ]);
     }
 }
