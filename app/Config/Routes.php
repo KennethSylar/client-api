@@ -61,23 +61,25 @@ $routes->post('shop/payment/payfast/notify', '\App\Infrastructure\Http\Controlle
 $routes->post('shop/payment/ozow/notify',    '\App\Infrastructure\Http\Controllers\Shop\PaymentNotify::ozow');
 $routes->get( 'shop/orders/(:alphanum)',      '\App\Infrastructure\Http\Controllers\Shop\Orders::show/$1');
 
-// Customer account
-$routes->post('shop/account/register',   '\App\Infrastructure\Http\Controllers\Shop\CustomerAuth::register');
-$routes->post('shop/account/login',      '\App\Infrastructure\Http\Controllers\Shop\CustomerAuth::login');
-$routes->post('shop/account/logout',     '\App\Infrastructure\Http\Controllers\Shop\CustomerAuth::logout');
-$routes->get( 'shop/account/me',         '\App\Infrastructure\Http\Controllers\Shop\CustomerAuth::me');
-$routes->put( 'shop/account/me',         '\App\Infrastructure\Http\Controllers\Shop\CustomerAuth::update');
-$routes->get( 'shop/account/orders',     '\App\Infrastructure\Http\Controllers\Shop\CustomerAuth::orders');
+// Customer account — public (no auth filter)
+$routes->post('shop/account/register', '\App\Infrastructure\Http\Controllers\Shop\CustomerAuth::register');
+$routes->post('shop/account/login',    '\App\Infrastructure\Http\Controllers\Shop\CustomerAuth::login');
+$routes->post('shop/account/logout',   '\App\Infrastructure\Http\Controllers\Shop\CustomerAuth::logout');
+
+// Customer account — protected (customerauth filter: cookie → Bearer fallback)
+$routes->get('shop/account/me',     '\App\Infrastructure\Http\Controllers\Shop\CustomerAuth::me',     ['filter' => 'customerauth']);
+$routes->put('shop/account/me',     '\App\Infrastructure\Http\Controllers\Shop\CustomerAuth::update', ['filter' => 'customerauth']);
+$routes->get('shop/account/orders', '\App\Infrastructure\Http\Controllers\Shop\CustomerAuth::orders', ['filter' => 'customerauth']);
 
 // Customer order actions
-$routes->post('shop/account/orders/(:alphanum)/cancel',         '\App\Infrastructure\Http\Controllers\Shop\CustomerOrders::cancel/$1');
-$routes->post('shop/account/orders/(:alphanum)/refund-request', '\App\Infrastructure\Http\Controllers\Shop\CustomerOrders::requestRefund/$1');
+$routes->post('shop/account/orders/(:alphanum)/cancel',         '\App\Infrastructure\Http\Controllers\Shop\CustomerOrders::cancel/$1',        ['filter' => 'customerauth']);
+$routes->post('shop/account/orders/(:alphanum)/refund-request', '\App\Infrastructure\Http\Controllers\Shop\CustomerOrders::requestRefund/$1', ['filter' => 'customerauth']);
 
 // Customer saved addresses
-$routes->get(   'shop/account/addresses',         '\App\Infrastructure\Http\Controllers\Shop\CustomerAddresses::index');
-$routes->post(  'shop/account/addresses',         '\App\Infrastructure\Http\Controllers\Shop\CustomerAddresses::store');
-$routes->put(   'shop/account/addresses/(:num)',  '\App\Infrastructure\Http\Controllers\Shop\CustomerAddresses::update/$1');
-$routes->delete('shop/account/addresses/(:num)',  '\App\Infrastructure\Http\Controllers\Shop\CustomerAddresses::destroy/$1');
+$routes->get(   'shop/account/addresses',        '\App\Infrastructure\Http\Controllers\Shop\CustomerAddresses::index',     ['filter' => 'customerauth']);
+$routes->post(  'shop/account/addresses',        '\App\Infrastructure\Http\Controllers\Shop\CustomerAddresses::store',     ['filter' => 'customerauth']);
+$routes->put(   'shop/account/addresses/(:num)', '\App\Infrastructure\Http\Controllers\Shop\CustomerAddresses::update/$1', ['filter' => 'customerauth']);
+$routes->delete('shop/account/addresses/(:num)', '\App\Infrastructure\Http\Controllers\Shop\CustomerAddresses::destroy/$1',['filter' => 'customerauth']);
 
 // ----------------------------------------------------------------
 // Shop — admin (protected)

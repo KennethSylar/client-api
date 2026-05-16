@@ -2,8 +2,10 @@
 
 namespace App\Infrastructure\Http\Controllers\Shop;
 
+use App\Domain\Orders\Customer;
 use App\Domain\Orders\CustomerAddress;
 use App\Infrastructure\Http\Controllers\BaseController;
+use App\Infrastructure\Http\Filters\CustomerAuthContext;
 
 class CustomerAddresses extends BaseController
 {
@@ -105,15 +107,10 @@ class CustomerAddresses extends BaseController
         return $this->ok();
     }
 
-    protected function requireCustomer()
+    protected function requireCustomer(): Customer|\CodeIgniter\HTTP\ResponseInterface
     {
-        $header = $this->request->getHeaderLine('Authorization');
-        $token  = str_starts_with($header, 'Bearer ') ? substr($header, 7) : null;
-        if (!$token) return $this->unauthorized('Authentication required.');
-
-        $customer = service('customerRepository')->findByToken($token);
-        if (!$customer) return $this->unauthorized('Session expired or invalid.');
-
+        $customer = CustomerAuthContext::get();
+        if (!$customer) return $this->unauthorized('Authentication required.');
         return $customer;
     }
 }

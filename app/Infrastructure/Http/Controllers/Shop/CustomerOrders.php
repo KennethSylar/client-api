@@ -6,6 +6,7 @@ use App\Domain\Orders\Customer;
 use App\Domain\Orders\OrderStatus;
 use App\Domain\Orders\OrderStatusLogEntry;
 use App\Infrastructure\Http\Controllers\BaseController;
+use App\Infrastructure\Http\Filters\CustomerAuthContext;
 
 class CustomerOrders extends BaseController
 {
@@ -63,13 +64,8 @@ class CustomerOrders extends BaseController
 
     private function requireCustomer(): Customer|\CodeIgniter\HTTP\ResponseInterface
     {
-        $header = $this->request->getHeaderLine('Authorization');
-        $token  = str_starts_with($header, 'Bearer ') ? substr($header, 7) : null;
-        if (!$token) return $this->unauthorized('Authentication required.');
-
-        $customer = service('customerRepository')->findByToken($token);
-        if (!$customer) return $this->unauthorized('Session expired or invalid.');
-
+        $customer = CustomerAuthContext::get();
+        if (!$customer) return $this->unauthorized('Authentication required.');
         return $customer;
     }
 }

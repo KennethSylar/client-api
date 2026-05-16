@@ -9,6 +9,7 @@ use App\Application\Orders\Commands\UpdateCustomerCommand;
 use App\Application\Orders\Queries\GetCustomerOrdersQuery;
 use App\Domain\Orders\Customer;
 use App\Infrastructure\Http\Controllers\BaseController;
+use App\Infrastructure\Http\Filters\CustomerAuthContext;
 
 class CustomerAuth extends BaseController
 {
@@ -47,6 +48,8 @@ class CustomerAuth extends BaseController
             return $this->error($e->getMessage(), 409);
         }
 
+        $this->setCustomerCookie($token);
+
         return $this->ok([
             'customer' => $this->formatCustomer($customer),
             'token'    => $token,
@@ -83,6 +86,8 @@ class CustomerAuth extends BaseController
             return $this->error($e->getMessage(), 401);
         }
 
+        $this->setCustomerCookie($token);
+
         return $this->ok([
             'customer' => $this->formatCustomer($customer),
             'token'    => $token,
@@ -91,10 +96,16 @@ class CustomerAuth extends BaseController
 
     public function logout(): \CodeIgniter\HTTP\ResponseInterface
     {
-        $token = $this->getBearerToken();
+        // Read token from cookie or Bearer header (filter not applied to this route)
+        $token = $this->request->getCookie('jnv_customer_session')
+              ?? $this->getBearerToken();
+
         if ($token) {
             service('logoutCustomerHandler')->handle(new LogoutCustomerCommand($token));
         }
+
+        $this->response->deleteCookie('jnv_customer_session');
+
         return $this->ok();
     }
 
@@ -162,13 +173,22 @@ class CustomerAuth extends BaseController
 
     protected function requireCustomer(): Customer|\CodeIgniter\HTTP\ResponseInterface
     {
-        $token = $this->getBearerToken();
-        if (!$token) return $this->unauthorized('Authentication required.');
-
-        $customer = service('customerRepository')->findByToken($token);
-        if (!$customer) return $this->unauthorized('Session expired or invalid.');
-
+        $customer = CustomerAuthContext::get();
+        if (!$customer) return $this->unauthorized('Authentication required.');
         return $customer;
+    }
+
+    private function setCustomerCookie(string $token): void
+    {
+        $this->response->setCookie([
+            'name'     => 'jnv_customer_session',
+            'value'    => $token,
+            'expire'   => 30 * 24 * 3600,
+            'path'     => '/',
+            'secure'   => ENVIRONMENT === 'production',
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
     }
 
     private function formatCustomer(Customer $c): array
