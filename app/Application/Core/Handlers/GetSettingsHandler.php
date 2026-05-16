@@ -34,7 +34,7 @@ final class GetSettingsHandler
             'whatsapp_number', 'whatsapp_display',
             'address_physical', 'address_postal',
             // Navigation
-            'nav_items',
+            'nav_items', 'nav_cta_label', 'nav_cta_href',
         ]);
     }
 }

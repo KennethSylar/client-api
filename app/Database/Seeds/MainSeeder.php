@@ -38,7 +38,9 @@ class MainSeeder extends Seeder
 
             // Navigation — JSON array of { label, href } objects
             // e.g. [{"label":"About","href":"/about"},{"label":"Downloads","href":"/downloads"}]
-            'nav_items' => '[]',
+            'nav_items'     => '[]',
+            'nav_cta_label' => 'Request a Quote',
+            'nav_cta_href'  => '/contact',
         ];
 
         foreach ($settings as $key => $value) {
